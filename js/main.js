@@ -51,6 +51,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     showPage('shopee-live');
   }
 
+  // Handle Shopee auth error dari redirect
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('shopee_auth_error')) {
+    const errMsg = urlParams.get('shopee_auth_error');
+    window.history.replaceState({}, '', window.location.pathname);
+    showPage('shopee-live');
+    setTimeout(() => {
+      const errEl = document.getElementById('shopeeAuthError');
+      if (errEl) { errEl.textContent = 'Auth gagal: ' + errMsg; errEl.style.display = 'block'; }
+    }, 100);
+  }
+
   // Sidebar navigation
   document.querySelectorAll('.nav-item[data-page]').forEach(item => {
     item.addEventListener('click', () => {
