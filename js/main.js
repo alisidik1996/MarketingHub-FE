@@ -46,8 +46,14 @@ function showPage(page) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Handle Shopee OAuth callback redirect (params di URL)
-  if (handleAuthCallback()) {
-    // Auth berhasil — langsung buka halaman Shopee
+  const callbackResult = handleAuthCallback();
+  console.log('[Shopee] handleAuthCallback result:', callbackResult);
+  console.log('[Shopee] localStorage after callback:', {
+    access_token: localStorage.getItem('shopee_access_token')?.slice(0,20) + '...',
+    shop_id:      localStorage.getItem('shopee_shop_id'),
+    expire_at:    localStorage.getItem('shopee_expire_at'),
+  });
+  if (callbackResult) {
     showPage('shopee-live');
   }
 
