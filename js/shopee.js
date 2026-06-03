@@ -41,8 +41,9 @@ export function clearShopeeAuth() {
 }
 
 export function isShopeeAuthed() {
-  const { access_token, user_id, expire_at } = getShopeeAuth();
-  return !!(access_token && user_id && Date.now() < expire_at);
+  const { access_token, expire_at } = getShopeeAuth();
+  // Cukup cek access_token dan expire_at — user_id bisa kosong untuk Shop auth
+  return !!(access_token && Date.now() < expire_at);
 }
 
 export function shopeeTokenExpiresIn() {
@@ -139,17 +140,22 @@ export function handleAuthCallback() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('shopee_auth') !== '1') return false;
 
-  saveShopeeAuth({
+  const expire_in = parseInt(params.get('expire_in') || '14400', 10);
+  const authData  = {
     access_token:  params.get('access_token')  || '',
     refresh_token: params.get('refresh_token') || '',
     user_id:       params.get('user_id')       || '',
     shop_id:       params.get('shop_id')       || '',
-    expire_in:     parseInt(params.get('expire_in') || '14400', 10),
-  });
+    expire_in:     isNaN(expire_in) ? 14400 : expire_in,
+  };
+
+  // Jangan simpan jika access_token kosong
+  if (!authData.access_token) return false;
+
+  saveShopeeAuth(authData);
 
   // Bersihkan URL dari params sensitif
-  const clean = window.location.pathname;
-  window.history.replaceState({}, '', clean);
+  window.history.replaceState({}, '', window.location.pathname);
   return true;
 }
 
@@ -221,7 +227,7 @@ function renderDashboardPage(sessions) {
       <div class="shopee-status-bar">
         <div class="shopee-status-info">
           <span class="shopee-badge connected">🟢 Terhubung</span>
-          <span class="shopee-meta">User ID: <strong>${user_id}</strong></span>
+          ${user_id ? `<span class="shopee-meta">User ID: <strong>${user_id}</strong></span>` : ''}
           ${shop_id ? `<span class="shopee-meta">Shop ID: <strong>${shop_id}</strong></span>` : ''}
           <span class="shopee-meta">Token: <strong>${expireStr}</strong> lagi</span>
         </div>
