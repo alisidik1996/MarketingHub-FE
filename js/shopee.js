@@ -406,9 +406,9 @@ function stopAutoRefresh() {
 export function initShopeeEvents() {
   const $ = id => document.getElementById(id);
 
-  // Auth button — pakai auth_type=user untuk dapat user_id (wajib untuk Livestream API)
+  // Auth button — pakai auth_type=seller (standard Shop app)
   $('btnShopeeAuth')?.addEventListener('click', async () => {
-    const url = await fetchAuthUrl('user').catch(e => { alert(e.message); return null; });
+    const url = await fetchAuthUrl('seller').catch(e => { alert(e.message); return null; });
     if (url) window.location.href = url;
   });
 
