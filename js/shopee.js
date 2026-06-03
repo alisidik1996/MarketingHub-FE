@@ -166,41 +166,48 @@ function renderTable(sessions) {
     <div class="table-wrapper">
       <table id="shopeeTable">
         <thead><tr>
-          <th>Nama Sesi</th>
-          <th>Tanggal</th>
-          <th class="num">Views</th>
-          <th class="num">Unique</th>
-          <th class="num">Durasi</th>
-          <th class="num">Orders</th>
-          <th class="num">Units</th>
-          <th class="num">Buyers</th>
-          <th class="num">Gross Sales</th>
-          <th class="num">Net Sales</th>
-          <th class="num">CR</th>
+          <th>Session ID</th>
+          <th>Start Date</th>
+          <th class="num">Total Views</th>
+          <th class="num">Unique Viewers</th>
+          <th class="num">Live Duration</th>
+          <th class="num">Duration (min)</th>
+          <th class="num">Avg Duration</th>
+          <th class="num">Avg Duration (min)</th>
+          <th class="num">New Followers</th>
           <th class="num">Likes</th>
           <th class="num">Comments</th>
-          <th class="num">Followers</th>
+          <th class="num">Buyers</th>
+          <th class="num">ATC Units</th>
+          <th class="num">Units Sold</th>
+          <th class="num">Orders</th>
+          <th class="num">Gross Sales (USD)</th>
+          <th class="num">Gross Sales (Local)</th>
+          <th class="num">Net Sales (USD)</th>
+          <th class="num">Net Sales (Local)</th>
         </tr></thead>
         <tbody>
           ${sessions.map(s => `
             <tr>
-              <td class="col-sticky">
-                <div class="campaign-name" title="${escHtml(s.livestream_name)}">${escHtml(s.livestream_name)}</div>
-                <div style="font-size:11px;color:var(--text-muted)">ID: ${escHtml(s.session_id)}</div>
-              </td>
+              <td class="col-sticky" style="font-size:12px;font-family:monospace">${escHtml(s.session_id)}</td>
               <td style="white-space:nowrap;font-size:12px">${fmtDate(s.start_date)}</td>
               <td class="num">${fmtNum(s.total_views)}</td>
               <td class="num">${fmtNum(s.unique_viewers)}</td>
               <td class="num" style="white-space:nowrap">${s.duration_str || '—'}</td>
-              <td class="num">${fmtNum(s.orders)}</td>
-              <td class="num">${fmtNum(s.units_sold)}</td>
-              <td class="num">${fmtNum(s.buyers)}</td>
-              <td class="num">${fmtIDR(s.gross_sales_local)}</td>
-              <td class="num">${fmtIDR(s.net_sales_local)}</td>
-              <td class="num">${fmtPct(s.conversion_rate)}</td>
+              <td class="num">${s.duration_minutes || '—'}</td>
+              <td class="num" style="white-space:nowrap">${s.avg_duration_str || '—'}</td>
+              <td class="num">${s.avg_duration_minutes || '—'}</td>
+              <td class="num">${fmtNum(s.new_followers)}</td>
               <td class="num">${fmtNum(s.likes)}</td>
               <td class="num">${fmtNum(s.comments)}</td>
-              <td class="num">${fmtNum(s.new_followers)}</td>
+              <td class="num">${fmtNum(s.buyers)}</td>
+              <td class="num">${fmtNum(s.atc_units)}</td>
+              <td class="num">${fmtNum(s.units_sold)}</td>
+              <td class="num">${fmtNum(s.orders)}</td>
+              <td class="num">$${(s.gross_sales_usd || 0).toFixed(2)}</td>
+              <td class="num">${fmtIDR(s.gross_sales_local)}</td>
+              <td class="num">$${(s.net_sales_usd || 0).toFixed(2)}</td>
+              <td class="num">${fmtIDR(s.net_sales_local)}</td>
             </tr>`).join('')}
         </tbody>
       </table>
