@@ -7,9 +7,8 @@
 // Untuk production, ubah ke URL backend kamu
 export const API_BASE = 'https://marketing-hub-be.vercel.app/api';
 
-// Fallback Meta token — untuk development lokal saja
-// Untuk production: kosongkan ini, gunakan localStorage atau input manual
-export const FALLBACK_TOKEN = '';
+// Token diambil otomatis dari backend env saat app boot.
+// Tidak perlu set di sini.
 
 // Meta ad accounts
 export const AD_GROUPS = {

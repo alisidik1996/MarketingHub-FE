@@ -32,6 +32,14 @@ export const inspectToken = token =>
 export const extendToken = token =>
   post('/meta/token/extend', { token });
 
+// Ambil fallback token dari backend env (tidak expose secret)
+export async function fetchFallbackToken() {
+  const res  = await fetch(`${API_BASE}/meta/token/fallback`);
+  const data = await res.json();
+  if (!res.ok || !data.token) throw new Error('Fallback token tidak tersedia');
+  return data.token;
+}
+
 // ── Meta data endpoints ───────────────────────────────
 export const fetchAccount = accountId =>
   post('/meta/account', { accountId });

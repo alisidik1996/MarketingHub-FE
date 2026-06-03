@@ -1,10 +1,10 @@
 /**
  * Entry point — boots the application.
  */
-import { TokenManager }          from './tokenManager.js';
+import { TokenManager }              from './tokenManager.js';
 import { loadDashboard, initEvents } from './controller.js';
-import { FALLBACK_TOKEN }        from './config.js';
-import { setToken }              from './api.js';
+import { setToken, fetchFallbackToken } from './api.js';
+import { LS_TOKEN }                  from './config.js';
 import { renderAgentsPage, initAgentEvents } from './agents.js';
 
 // ── Page navigation ───────────────────────────────────
@@ -14,12 +14,10 @@ let _activePage = 'meta-ads';
 function showPage(page) {
   _activePage = page;
 
-  // Update sidebar active state
   document.querySelectorAll('.nav-item[data-page]').forEach(item => {
     item.classList.toggle('active', item.dataset.page === page);
   });
 
-  // Show/hide pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 
   if (page === 'meta-ads') {
@@ -50,13 +48,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Wire up Meta Ads events
   initEvents();
 
-  // Set token
-  const stored = localStorage.getItem('mam_meta_token');
-  const token  = stored || FALLBACK_TOKEN;
-  setToken(token);
+  // Resolve token: localStorage → backend env → kosong
+  const stored = localStorage.getItem(LS_TOKEN);
+  let token    = stored || '';
 
-  // Token check in background
-  TokenManager.init(FALLBACK_TOKEN).catch(console.warn);
+  if (!token) {
+    try {
+      token = await fetchFallbackToken();
+      // Simpan ke localStorage agar tidak fetch ulang setiap refresh
+      localStorage.setItem(LS_TOKEN, token);
+    } catch {
+      // Backend tidak punya fallback token — user harus input manual
+      console.warn('Tidak ada token tersedia, user perlu input manual.');
+    }
+  }
+
+  if (token) setToken(token);
+
+  // Token inspect + auto-extend di background
+  if (token) TokenManager.init(token).catch(console.warn);
 
   // Load dashboard
   await loadDashboard();
