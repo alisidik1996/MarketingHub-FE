@@ -5,7 +5,7 @@
 
 // Ganti dengan URL backend saat deploy, e.g. 'https://your-backend.railway.app'
 // Untuk production, ubah ke URL backend kamu
-export const API_BASE = 'http://localhost:3001/api';
+export const API_BASE = 'https://marketing-hub-be.vercel.app/api';
 
 // Fallback Meta token — untuk development lokal saja
 // Untuk production: kosongkan ini, gunakan localStorage atau input manual
