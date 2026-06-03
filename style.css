@@ -2168,3 +2168,522 @@ tfoot .col-sticky {
   border-color: var(--accent);
   color: var(--accent-light);
 }
+
+/* =====================================================
+   SHOPEE LIVESTREAM PAGE
+   ===================================================== */
+
+.shopee-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+/* ── Auth card ── */
+.shopee-auth-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px 40px;
+  max-width: 520px;
+  margin: 40px auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.shopee-auth-icon {
+  font-size: 56px;
+  margin-bottom: 4px;
+}
+
+.shopee-auth-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.shopee-auth-card > p {
+  font-size: 14px;
+  color: var(--text-dim);
+  max-width: 360px;
+}
+
+.shopee-auth-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  margin: 4px 0;
+}
+
+.auth-info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.auth-info-icon { font-size: 16px; }
+
+.shopee-auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.btn-shopee-auth {
+  background: linear-gradient(135deg, #ee4d2d, #f5734a);
+  border: none;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity var(--transition), transform var(--transition);
+  width: 100%;
+}
+.btn-shopee-auth:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-shopee-auth.btn-secondary {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-shopee-auth.btn-secondary:hover { border-color: #ee4d2d; color: #ee4d2d; }
+
+.shopee-auth-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Status bar ── */
+.shopee-status-bar {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.shopee-status-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.shopee-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.shopee-badge.connected {
+  background: rgba(16,185,129,0.12);
+  color: var(--green);
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+.shopee-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.shopee-status-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid rgba(239,68,68,0.4);
+  color: var(--red);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background var(--transition);
+}
+.btn-danger:hover { background: rgba(239,68,68,0.1); }
+
+/* ── Session input card ── */
+.shopee-session-input-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  flex-shrink: 0;
+}
+
+.shopee-session-input-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.shopee-session-input-card p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.session-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.session-input-row input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.session-input-row input:focus { border-color: #ee4d2d; }
+
+.session-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--red);
+  padding: 6px 10px;
+  background: rgba(239,68,68,0.08);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Loading ── */
+.shopee-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Session detail ── */
+.shopee-session-detail {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.session-detail-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.session-cover {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.session-cover-placeholder {
+  width: 100px;
+  height: 100px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.session-detail-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-detail-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.session-detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.session-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Session status badge ── */
+.session-status-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+.session-status-badge.live {
+  background: rgba(239,68,68,0.15);
+  color: var(--red);
+  animation: pulseLive 2s infinite;
+}
+.session-status-badge.ended {
+  background: rgba(16,185,129,0.12);
+  color: var(--green);
+}
+.session-status-badge.lg {
+  font-size: 13px;
+  padding: 5px 14px;
+}
+
+@keyframes pulseLive {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
+.auto-refresh-badge {
+  font-size: 11px;
+  color: var(--accent-light);
+  background: rgba(79,70,229,0.12);
+  border: 1px solid rgba(79,70,229,0.25);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* ── Metrics grid ── */
+.session-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.metric-card-shopee {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color var(--transition);
+}
+.metric-card-shopee:hover { border-color: #ee4d2d; }
+.metric-card-shopee.accent { border-color: rgba(238,77,45,0.3); }
+
+.metric-icon { font-size: 22px; flex-shrink: 0; }
+
+.metric-body { min-width: 0; }
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 3px;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Session items ── */
+.session-items-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.session-items-card h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.session-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.session-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: var(--bg2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.item-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.item-thumb-placeholder {
+  width: 44px;
+  height: 44px;
+  background: var(--bg3);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.item-row-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-row-id {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── History ── */
+.shopee-history-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  flex-shrink: 0;
+}
+
+.shopee-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.shopee-history-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.shopee-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  transition: border-color var(--transition);
+}
+.shopee-history-item:hover { border-color: #ee4d2d; }
+.shopee-history-item:last-child { margin-bottom: 0; }
+
+.history-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.history-item-info { min-width: 0; }
+
+.history-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Empty / Error ── */
+.shopee-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.shopee-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--red);
+  font-size: 13px;
+}
+
+/* ── Responsive Shopee ── */
+@media (max-width: 767px) {
+  .shopee-auth-card { padding: 32px 20px; margin: 20px 0; }
+  .session-detail-header { flex-direction: column; }
+  .session-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .session-input-row { flex-direction: column; }
+  .shopee-status-bar { flex-direction: column; align-items: flex-start; }
+}

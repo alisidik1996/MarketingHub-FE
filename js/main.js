@@ -6,6 +6,7 @@ import { loadDashboard, initEvents } from './controller.js';
 import { setToken, fetchFallbackToken } from './api.js';
 import { LS_TOKEN }                  from './config.js';
 import { renderAgentsPage, initAgentEvents } from './agents.js';
+import { renderShopeePage, initShopeeEvents, handleAuthCallback } from './shopee.js';
 
 // ── Page navigation ───────────────────────────────────
 
@@ -31,12 +32,25 @@ function showPage(page) {
     document.querySelector('.topbar-left h1').textContent = 'AI Agents';
     document.querySelector('.topbar-right').style.display = 'none';
     initAgentEvents();
+  } else if (page === 'shopee-live') {
+    const pageEl = document.getElementById('page-shopee-live');
+    pageEl.innerHTML = renderShopeePage();
+    pageEl.classList.add('active');
+    document.querySelector('.topbar-left h1').textContent = 'Shopee Livestream';
+    document.querySelector('.topbar-right').style.display = 'none';
+    initShopeeEvents();
   }
 }
 
 // ── Boot ──────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Handle Shopee OAuth callback redirect (params di URL)
+  if (handleAuthCallback()) {
+    // Auth berhasil — langsung buka halaman Shopee
+    showPage('shopee-live');
+  }
+
   // Sidebar navigation
   document.querySelectorAll('.nav-item[data-page]').forEach(item => {
     item.addEventListener('click', () => {
