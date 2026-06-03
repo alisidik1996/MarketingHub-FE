@@ -839,13 +839,220 @@ tbody td {
 }
 [data-tooltip]:hover::after { opacity: 1; }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .topbar { padding: 0 16px; }
-  .page { padding: 16px; }
-  .summary-cards { grid-template-columns: repeat(2, 1fr); }
-  .charts-row { grid-template-columns: 1fr; }
-  .table-controls input { width: 140px; }
+/* =====================================================
+   RESPONSIVE — Desktop / Tablet / Mobile
+   ===================================================== */
+
+/* ── Tablet (768px – 1023px) ── */
+@media (max-width: 1023px) {
+  /* Sidebar auto-collapsed */
+  .sidebar {
+    width: var(--sidebar-collapsed-w);
+    min-width: var(--sidebar-collapsed-w);
+  }
+  .sidebar .logo-text,
+  .sidebar .nav-label,
+  .sidebar .badge-soon,
+  .sidebar .version { display: none; }
+
+  /* Topbar lebih compact */
+  .topbar { padding: 0 16px; gap: 8px; }
+  .page-title { font-size: 16px; }
+
+  /* Topbar right: wrap */
+  .topbar-right { gap: 8px; flex-wrap: wrap; }
+  .last-updated { display: none; }
+
+  /* Account bar stack */
+  .account-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  /* Table controls */
+  .table-controls { flex-wrap: wrap; gap: 8px; }
+  .table-controls input { width: 160px; }
+
+  /* Agents grid */
+  .agents-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Form row */
+  .form-row { grid-template-columns: 1fr; }
+}
+
+/* ── Mobile (<768px) ── */
+@media (max-width: 767px) {
+
+  /* ── Sidebar jadi overlay dari kiri ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1),
+                width var(--transition), min-width var(--transition);
+    z-index: 300;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+  }
+
+  /* Sidebar open state (toggle via JS class) */
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Saat sidebar open, logo-text dan nav-label muncul kembali */
+  .sidebar.mobile-open .logo-text,
+  .sidebar.mobile-open .nav-label,
+  .sidebar.mobile-open .badge-soon,
+  .sidebar.mobile-open .version { display: unset; }
+
+  /* Overlay gelap saat sidebar mobile open */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 299;
+  }
+  .sidebar-overlay.active { display: block; }
+
+  /* Main content full width */
+  .main-content { width: 100%; }
+
+  /* Topbar */
+  .topbar {
+    padding: 0 12px;
+    gap: 8px;
+    height: auto;
+    min-height: var(--topbar-h);
+    flex-wrap: wrap;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .topbar-left { flex: 1; min-width: 0; }
+  .page-title { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .topbar-right {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+
+  /* Hide less important topbar items on mobile */
+  .last-updated { display: none; }
+
+  /* Date range picker compact */
+  .date-range-picker label { display: none; }
+  .date-range-picker select { font-size: 12px; padding: 5px 8px; }
+
+  .btn-refresh { padding: 6px 10px; font-size: 12px; }
+
+  /* Token status compact */
+  .token-status { font-size: 11px; padding: 4px 8px; }
+  .token-text { display: none; }
+  .btn-extend-token { font-size: 10px; padding: 2px 6px; }
+
+  /* Page */
+  .page {
+    padding: 12px;
+    gap: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Account bar stack vertical */
+  .account-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .account-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .adgroup-tabs { width: 100%; justify-content: center; }
+  .adgroup-tab { flex: 1; text-align: center; }
+
+  /* Table card */
+  .table-card .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .table-controls {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .table-controls input {
+    flex: 1;
+    min-width: 120px;
+    width: auto;
+  }
+
+  .table-controls select { flex: 1; }
+
+  .table-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+
+  /* Drawer full width on mobile */
+  .drawer, .chat-drawer {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* Modal full screen on mobile */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  /* Agents grid single column */
+  .agents-grid { grid-template-columns: 1fr; }
+
+  .agents-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .agents-header .btn-primary { width: 100%; justify-content: center; display: flex; }
+
+  /* Chat quick actions scroll horizontal */
+  .chat-quick-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .chat-quick-btn { white-space: nowrap; }
+
+  /* Form row single col */
+  .form-row { grid-template-columns: 1fr; }
+
+  /* Error banner */
+  .error-banner {
+    bottom: 12px;
+    width: calc(100% - 24px);
+    left: 12px;
+    transform: none;
+  }
 }
 
 /* ===== AD GROUP TABS ===== */

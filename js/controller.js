@@ -31,6 +31,23 @@ const dom = {
   btnDismissError:   $('btnDismissError'),
 };
 
+// ── Sidebar toggle ────────────────────────────────────
+
+function toggleSidebar() {
+  const isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    dom.sidebar.classList.toggle('mobile-open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+  } else {
+    dom.sidebar.classList.toggle('collapsed');
+  }
+}
+
+function closeSidebarMobile() {
+  dom.sidebar.classList.remove('mobile-open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
 // ── Load dashboard ────────────────────────────────────
 
 export async function loadDashboard() {
@@ -101,8 +118,24 @@ function exportCSV() {
 // ── Event wiring ──────────────────────────────────────
 
 export function initEvents() {
-  dom.sidebarToggle.addEventListener('click', () =>
-    dom.sidebar.classList.toggle('collapsed'));
+  // Sidebar toggle — desktop collapse / mobile overlay
+  dom.sidebarToggle.addEventListener('click', toggleSidebar);
+
+  // Close sidebar when clicking overlay on mobile
+  document.getElementById('sidebarOverlay')
+    .addEventListener('click', closeSidebarMobile);
+
+  // Close sidebar on mobile when nav item clicked
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth < 768) closeSidebarMobile();
+    });
+  });
+
+  // Close sidebar on resize to desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) closeSidebarMobile();
+  });
 
   dom.dateRange.addEventListener('change', () => {
     state.dateRange = dom.dateRange.value;
