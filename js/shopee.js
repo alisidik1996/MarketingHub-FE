@@ -140,21 +140,30 @@ export function handleAuthCallback() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('shopee_auth') !== '1') return false;
 
-  const expire_in = parseInt(params.get('expire_in') || '14400', 10);
-  const authData  = {
-    access_token:  params.get('access_token')  || '',
-    refresh_token: params.get('refresh_token') || '',
-    user_id:       params.get('user_id')       || '',
-    shop_id:       params.get('shop_id')       || '',
+  const access_token  = params.get('access_token')  || '';
+  const refresh_token = params.get('refresh_token') || '';
+  const shop_id       = params.get('shop_id')       || '';
+  const user_id       = params.get('user_id')       || '';
+  const expire_in_raw = params.get('expire_in')     || '14400';
+  const expire_in     = parseInt(expire_in_raw, 10);
+
+  console.log('[Shopee] callback raw params:', { access_token, shop_id, user_id, expire_in });
+
+  // Validasi — jangan simpan jika access_token tidak valid
+  if (!access_token || access_token === 'undefined' || access_token === 'null') {
+    console.warn('[Shopee] access_token tidak valid di callback URL');
+    window.history.replaceState({}, '', window.location.pathname);
+    return false;
+  }
+
+  saveShopeeAuth({
+    access_token,
+    refresh_token: refresh_token === 'undefined' ? '' : refresh_token,
+    user_id:       user_id === 'undefined' ? '' : user_id,
+    shop_id:       shop_id === 'undefined' ? '' : shop_id,
     expire_in:     isNaN(expire_in) ? 14400 : expire_in,
-  };
+  });
 
-  // Jangan simpan jika access_token kosong
-  if (!authData.access_token) return false;
-
-  saveShopeeAuth(authData);
-
-  // Bersihkan URL dari params sensitif
   window.history.replaceState({}, '', window.location.pathname);
   return true;
 }
