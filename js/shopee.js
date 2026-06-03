@@ -208,10 +208,7 @@ function renderAuthPage() {
 
         <div class="shopee-auth-actions">
           <button class="btn-shopee-auth" id="btnShopeeAuth">
-            🔗 Hubungkan Akun Shopee (Seller)
-          </button>
-          <button class="btn-shopee-auth btn-secondary" id="btnShopeeAuthAffiliate">
-            🔗 Hubungkan Akun Affiliate
+            🔗 Hubungkan Akun Shopee
           </button>
         </div>
 
@@ -409,13 +406,8 @@ function stopAutoRefresh() {
 export function initShopeeEvents() {
   const $ = id => document.getElementById(id);
 
-  // Auth buttons
+  // Auth button — pakai auth_type=user untuk dapat user_id (wajib untuk Livestream API)
   $('btnShopeeAuth')?.addEventListener('click', async () => {
-    const url = await fetchAuthUrl('seller').catch(e => { alert(e.message); return null; });
-    if (url) window.location.href = url;
-  });
-
-  $('btnShopeeAuthAffiliate')?.addEventListener('click', async () => {
     const url = await fetchAuthUrl('user').catch(e => { alert(e.message); return null; });
     if (url) window.location.href = url;
   });
