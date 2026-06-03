@@ -163,7 +163,7 @@ function renderTable(sessions) {
   }
 
   return `
-    <div class="table-wrapper">
+    <div class="shopee-table-wrapper">
       <table id="shopeeTable">
         <thead><tr>
           <th>Session ID</th>
@@ -181,22 +181,20 @@ function renderTable(sessions) {
           <th class="num">ATC Units</th>
           <th class="num">Units Sold</th>
           <th class="num">Orders</th>
-          <th class="num">Gross Sales (USD)</th>
           <th class="num">Gross Sales (Local)</th>
-          <th class="num">Net Sales (USD)</th>
           <th class="num">Net Sales (Local)</th>
         </tr></thead>
         <tbody>
           ${sessions.map(s => `
             <tr>
-              <td class="col-sticky" style="font-size:12px;font-family:monospace">${escHtml(s.session_id)}</td>
+              <td style="font-size:12px;font-family:monospace;white-space:nowrap">${escHtml(s.session_id)}</td>
               <td style="white-space:nowrap;font-size:12px">${fmtDate(s.start_date)}</td>
               <td class="num">${fmtNum(s.total_views)}</td>
               <td class="num">${fmtNum(s.unique_viewers)}</td>
               <td class="num" style="white-space:nowrap">${s.duration_str || '—'}</td>
-              <td class="num">${s.duration_minutes || '—'}</td>
+              <td class="num">${s.duration_minutes ?? '—'}</td>
               <td class="num" style="white-space:nowrap">${s.avg_duration_str || '—'}</td>
-              <td class="num">${s.avg_duration_minutes || '—'}</td>
+              <td class="num">${s.avg_duration_minutes ?? '—'}</td>
               <td class="num">${fmtNum(s.new_followers)}</td>
               <td class="num">${fmtNum(s.likes)}</td>
               <td class="num">${fmtNum(s.comments)}</td>
@@ -204,9 +202,7 @@ function renderTable(sessions) {
               <td class="num">${fmtNum(s.atc_units)}</td>
               <td class="num">${fmtNum(s.units_sold)}</td>
               <td class="num">${fmtNum(s.orders)}</td>
-              <td class="num">$${(s.gross_sales_usd || 0).toFixed(2)}</td>
               <td class="num">${fmtIDR(s.gross_sales_local)}</td>
-              <td class="num">$${(s.net_sales_usd || 0).toFixed(2)}</td>
               <td class="num">${fmtIDR(s.net_sales_local)}</td>
             </tr>`).join('')}
         </tbody>

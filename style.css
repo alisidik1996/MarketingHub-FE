@@ -2877,3 +2877,32 @@ tfoot .col-sticky {
   .btn-upload-xlsx { width: 100%; justify-content: center; }
   .shopee-search-row input { width: 100%; }
 }
+
+/* Shopee table wrapper — tidak scroll horizontal, kolom auto-fit */
+.shopee-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.shopee-table-wrapper table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.shopee-table-wrapper thead th {
+  font-size: 11px;
+  padding: 10px 8px;
+  white-space: nowrap;
+}
+
+.shopee-table-wrapper tbody td {
+  padding: 10px 8px;
+  font-size: 12px;
+}
+
+.shopee-table-wrapper td.num,
+.shopee-table-wrapper th.num {
+  text-align: right;
+}
