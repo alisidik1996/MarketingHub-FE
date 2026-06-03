@@ -79,11 +79,12 @@ function removeSession(sessionId) {
 // ── API calls ─────────────────────────────────────────
 
 function shopeeHeaders() {
-  const { access_token, user_id } = getShopeeAuth();
+  const { access_token, user_id, shop_id } = getShopeeAuth();
   return {
     'Content-Type':    'application/json',
     'x-shopee-token':  access_token,
-    'x-shopee-user':   user_id,
+    'x-shopee-user':   user_id  || '',
+    'x-shopee-shop':   shop_id  || '',
   };
 }
 
