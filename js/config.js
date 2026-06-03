@@ -9,7 +9,7 @@ export const API_BASE = 'https://marketing-hub-be.vercel.app/api';
 
 // Fallback Meta token — untuk development lokal saja
 // Untuk production: kosongkan ini, gunakan localStorage atau input manual
-export const FALLBACK_TOKEN = '';
+export const FALLBACK_TOKEN = 'EAAKuH4ZBXvTIBRjHuasCwUEqri3L1o1QjTcct5Vzr4MX397c0lZAvJMoMT7eZA4fBCExgCJJZA6LezuJpkMRZBqLFj0iQbFeKSaNgaXAAdM2BtvPth1TsOtE4Xnl4WplvsAhGr8KDPuk5eUGgQOQyOaB2UpMNGuU6vzGCpXzzFp7IWmFtWuWDJV76HmKiShEgCfHO';
 
 // Meta ad accounts
 export const AD_GROUPS = {
