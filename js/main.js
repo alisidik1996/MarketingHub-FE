@@ -6,15 +6,11 @@ import { loadDashboard, initEvents } from './controller.js';
 import { setToken, fetchFallbackToken } from './api.js';
 import { LS_TOKEN }                  from './config.js';
 import { renderAgentsPage, initAgentEvents } from './agents.js';
-import { renderShopeePage, initShopeeEvents, handleAuthCallback } from './shopee.js';
+import { renderShopeePage, initShopeeEvents } from './shopee.js';
 
 // ── Page navigation ───────────────────────────────────
 
-let _activePage = 'meta-ads';
-
 function showPage(page) {
-  _activePage = page;
-
   document.querySelectorAll('.nav-item[data-page]').forEach(item => {
     item.classList.toggle('active', item.dataset.page === page);
   });
@@ -45,30 +41,6 @@ function showPage(page) {
 // ── Boot ──────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Handle Shopee OAuth callback redirect (params di URL)
-  const callbackResult = handleAuthCallback();
-  console.log('[Shopee] handleAuthCallback result:', callbackResult);
-  console.log('[Shopee] localStorage after callback:', {
-    access_token: localStorage.getItem('shopee_access_token')?.slice(0,20) + '...',
-    shop_id:      localStorage.getItem('shopee_shop_id'),
-    expire_at:    localStorage.getItem('shopee_expire_at'),
-  });
-  if (callbackResult) {
-    showPage('shopee-live');
-  }
-
-  // Handle Shopee auth error dari redirect
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('shopee_auth_error')) {
-    const errMsg = urlParams.get('shopee_auth_error');
-    window.history.replaceState({}, '', window.location.pathname);
-    showPage('shopee-live');
-    setTimeout(() => {
-      const errEl = document.getElementById('shopeeAuthError');
-      if (errEl) { errEl.textContent = 'Auth gagal: ' + errMsg; errEl.style.display = 'block'; }
-    }, 100);
-  }
-
   // Sidebar navigation
   document.querySelectorAll('.nav-item[data-page]').forEach(item => {
     item.addEventListener('click', () => {
@@ -87,19 +59,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!token) {
     try {
       token = await fetchFallbackToken();
-      // Simpan ke localStorage agar tidak fetch ulang setiap refresh
       localStorage.setItem(LS_TOKEN, token);
     } catch {
-      // Backend tidak punya fallback token — user harus input manual
       console.warn('Tidak ada token tersedia, user perlu input manual.');
     }
   }
 
   if (token) setToken(token);
-
-  // Token inspect + auto-extend di background
   if (token) TokenManager.init(token).catch(console.warn);
 
-  // Load dashboard
   await loadDashboard();
 });
