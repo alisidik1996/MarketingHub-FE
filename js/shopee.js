@@ -153,41 +153,21 @@ export function renderShopeePage() {
   return `
     <div class="shopee-page" id="shopeePage">
 
-      <!-- Header -->
-      <div class="shopee-header">
-        <div>
-          <h2 class="shopee-title">🛒 Shopee Livestream</h2>
-          <p class="shopee-subtitle">Import laporan dari Shopee Seller Center dan analisis performa livestream</p>
-        </div>
-        <label class="btn-upload-xlsx" for="xlsxFileInput">
-          📤 Import XLSX
-          <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none" />
-        </label>
-      </div>
-
-      <!-- Upload status -->
-      <div id="uploadStatus" style="display:none"></div>
-
       <!-- Table card — sama persis dengan Meta Ads -->
       <div class="card table-card" id="shopeeTableCard" style="display:flex">
         <div class="card-header">
           <h3>📋 Riwayat Sesi Livestream</h3>
           <div class="table-controls">
-            <div class="date-range-picker">
-              <label>Periode:</label>
-              <select id="shopeeDateRange">
-                <option value="today">Hari Ini</option>
-                <option value="yesterday">Kemarin</option>
-                <option value="last_7d">7 Hari Terakhir</option>
-                <option value="last_30d" selected>30 Hari Terakhir</option>
-                <option value="this_month">Bulan Ini</option>
-                <option value="last_month">Bulan Lalu</option>
-                <option value="all">Semua Data</option>
-              </select>
-            </div>
             <input type="text" id="shopeeSearch" placeholder="🔍 Cari session ID..." value="${escHtml(_search)}" />
+            <label class="btn-sm btn-outline" for="xlsxFileInput" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+              📤 Import XLSX
+              <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none" />
+            </label>
           </div>
         </div>
+
+        <!-- Upload status inside card -->
+        <div id="uploadStatus" style="display:none;margin:0 20px 0;flex-shrink:0"></div>
 
         <div class="table-wrapper" id="shopeeTableWrap">
           ${renderTableLoading()}
@@ -313,12 +293,12 @@ export function initShopeeEvents() {
     } catch (err) {
       showUploadStatus('error', `⚠️ Upload gagal: ${err.message}`);
     } finally {
-      _uploading        = false;
-      e.target.value    = '';
+      _uploading     = false;
+      e.target.value = '';
     }
   });
 
-  // Date range
+  // Date range — ada di topbar
   $('shopeeDateRange')?.addEventListener('change', e => {
     _dateRange = e.target.value;
     _page      = 1;
