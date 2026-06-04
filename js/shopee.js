@@ -159,39 +159,44 @@ export function renderShopeePage() {
           <h2 class="shopee-title">🛒 Shopee Livestream</h2>
           <p class="shopee-subtitle">Import laporan dari Shopee Seller Center dan analisis performa livestream</p>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <div class="date-range-picker">
-            <label>Periode:</label>
-            <select id="shopeeDateRange">
-              <option value="today">Hari Ini</option>
-              <option value="yesterday">Kemarin</option>
-              <option value="last_7d">7 Hari Terakhir</option>
-              <option value="last_30d" selected>30 Hari Terakhir</option>
-              <option value="this_month">Bulan Ini</option>
-              <option value="last_month">Bulan Lalu</option>
-              <option value="all">Semua Data</option>
-            </select>
-          </div>
-          <label class="btn-upload-xlsx" for="xlsxFileInput">
-            📤 Import XLSX
-            <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none" />
-          </label>
-        </div>
+        <label class="btn-upload-xlsx" for="xlsxFileInput">
+          📤 Import XLSX
+          <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none" />
+        </label>
       </div>
 
       <!-- Upload status -->
       <div id="uploadStatus" style="display:none"></div>
 
-      <!-- Table -->
-      <div class="shopee-table-card">
-        <div class="shopee-table-header">
+      <!-- Table card — sama persis dengan Meta Ads -->
+      <div class="card table-card" id="shopeeTableCard" style="display:flex">
+        <div class="card-header">
           <h3>📋 Riwayat Sesi Livestream</h3>
-          <input type="text" id="shopeeSearch" placeholder="🔍 Cari session ID atau nama..." value="${escHtml(_search)}" />
+          <div class="table-controls">
+            <div class="date-range-picker">
+              <label>Periode:</label>
+              <select id="shopeeDateRange">
+                <option value="today">Hari Ini</option>
+                <option value="yesterday">Kemarin</option>
+                <option value="last_7d">7 Hari Terakhir</option>
+                <option value="last_30d" selected>30 Hari Terakhir</option>
+                <option value="this_month">Bulan Ini</option>
+                <option value="last_month">Bulan Lalu</option>
+                <option value="all">Semua Data</option>
+              </select>
+            </div>
+            <input type="text" id="shopeeSearch" placeholder="🔍 Cari session ID..." value="${escHtml(_search)}" />
+          </div>
         </div>
 
-        <div id="shopeeTableWrap">${renderTableLoading()}</div>
+        <div class="table-wrapper" id="shopeeTableWrap">
+          ${renderTableLoading()}
+        </div>
 
-        <div class="shopee-table-footer" id="shopeeTableFooter"></div>
+        <div class="table-footer">
+          <span id="shopeeTableInfo">—</span>
+          <span id="shopeeLastUpdated" style="font-size:12px;color:var(--text-muted)">—</span>
+        </div>
       </div>
 
     </div>`;
@@ -203,12 +208,13 @@ function renderTableLoading() {
 
 function renderTableSection() {
   const tableEl  = document.getElementById('shopeeTableWrap');
-  const footerEl = document.getElementById('shopeeTableFooter');
+  const infoEl   = document.getElementById('shopeeTableInfo');
+  const updEl    = document.getElementById('shopeeLastUpdated');
   if (!tableEl) return;
 
   if (!_filtered.length) {
-    tableEl.innerHTML  = `<div class="shopee-empty"><div class="empty-icon">📭</div><p>Tidak ada data untuk periode ini.</p></div>`;
-    footerEl.innerHTML = '';
+    tableEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Tidak ada data untuk periode ini.</p></div>`;
+    if (infoEl) infoEl.textContent = '0 sesi';
     return;
   }
 
@@ -216,15 +222,15 @@ function renderTableSection() {
   const start = (_page - 1) * PAGE_SIZE;
   const page  = _filtered.slice(start, start + PAGE_SIZE);
 
-  // Build header dengan sort arrows
+  // Header dengan sort arrows — sama dengan Meta Ads pattern
   const thead = COLS.map(c => {
-    if (!c.sortable) return `<th class="${c.num?'num':''}">${c.label}</th>`;
+    if (!c.sortable) return `<th class="${c.num ? 'num' : ''}">${c.label}</th>`;
     const active = _sortKey === c.key;
-    const arrow  = active ? (_sortDir === 'asc' ? ' ▲' : ' ▼') : ' ↕';
-    return `<th class="sortable ${c.num?'num':''} ${active?'sorted':''}" data-col="${c.key}">${c.label}<span class="sort-arrow">${arrow}</span></th>`;
+    const arrow  = active ? (_sortDir === 'asc' ? ' ▲' : ' ▼') : '';
+    return `<th class="sortable${active ? ' sorted' : ''} ${c.num ? 'num' : ''}" data-col="${c.key}">${c.label}<span class="sort-arrow">${arrow || ' ↕'}</span></th>`;
   }).join('');
 
-  // Build rows
+  // Rows
   const tbody = page.map(s => `
     <tr>
       ${COLS.map(c => {
@@ -232,34 +238,32 @@ function renderTableSection() {
         if (c.key === 'session_id') return `<td style="font-size:11px;font-family:monospace;white-space:nowrap">${escHtml(v)}</td>`;
         if (c.key === 'start_date') return `<td style="white-space:nowrap;font-size:12px">${fmtDate(v)}</td>`;
         if (!c.num) return `<td style="white-space:nowrap">${v ?? '—'}</td>`;
-        if (IDR_COLS.has(c.key)) return `<td class="num">${fmtIDR(v)}</td>`;
-        return `<td class="num">${fmtNum(v)}</td>`;
+        const n = parseFloat(v) || 0;
+        if (IDR_COLS.has(c.key)) return `<td class="num">${n > 0 ? fmtIDR(n) : '—'}</td>`;
+        return `<td class="num">${n > 0 ? fmtNum(n) : '—'}</td>`;
       }).join('')}
     </tr>`).join('');
 
-  // Build footer totals
+  // Footer totals — pakai class foot-label dan foot-val sama dengan Meta Ads
   const totals = {};
   SUM_COLS.forEach(k => {
     totals[k] = _filtered.reduce((a, r) => a + (parseFloat(r[k]) || 0), 0);
   });
 
   const tfoot = COLS.map(c => {
-    if (c.key === 'session_id') return `<td class="foot-label">Total (${_filtered.length})</td>`;
+    if (c.key === 'session_id') return `<td class="col-sticky foot-label">Total (${_filtered.length})</td>`;
     if (!SUM_COLS.has(c.key))   return `<td></td>`;
-    if (IDR_COLS.has(c.key))    return `<td class="num foot-val">${fmtIDR(totals[c.key])}</td>`;
-    if (c.key === 'duration_minutes' || c.key === 'avg_duration_minutes')
-      return `<td class="num foot-val">${totals[c.key].toFixed(0)}</td>`;
-    return `<td class="num foot-val">${fmtNum(totals[c.key])}</td>`;
+    const val = totals[c.key] || 0;
+    if (IDR_COLS.has(c.key))    return `<td class="num foot-val">${val > 0 ? fmtIDR(val) : '—'}</td>`;
+    return `<td class="num foot-val">${val > 0 ? fmtNum(val) : '—'}</td>`;
   }).join('');
 
   tableEl.innerHTML = `
-    <div class="shopee-table-wrapper">
-      <table id="shopeeTable">
-        <thead><tr>${thead}</tr></thead>
-        <tbody>${tbody}</tbody>
-        <tfoot><tr>${tfoot}</tr></tfoot>
-      </table>
-    </div>`;
+    <table id="shopeeTable">
+      <thead><tr>${thead}</tr></thead>
+      <tbody>${tbody}</tbody>
+      <tfoot><tr>${tfoot}</tr></tfoot>
+    </table>`;
 
   // Sort listeners
   tableEl.querySelectorAll('th.sortable').forEach(th => {
@@ -271,18 +275,9 @@ function renderTableSection() {
     });
   });
 
-  // Pagination footer
-  const total = _filtered.length;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  let pages = '';
-  for (let i = 1; i <= Math.min(totalPages, 7); i++) {
-    pages += `<button class="page-btn ${i===_page?'active':''}" data-p="${i}">${i}</button>`;
-  }
-  if (totalPages > 7) pages += `<span style="padding:0 8px;color:var(--text-muted)">... ${totalPages}</span>`;
-
-  footerEl.innerHTML = `
-    <span style="font-size:12px;color:var(--text-muted)">${total} sesi</span>
-    <div class="pagination">${pages}</div>`;
+  // Update info
+  if (infoEl) infoEl.textContent = `${_filtered.length} sesi`;
+  if (updEl)  updEl.textContent  = 'Diperbarui: ' + new Date().toLocaleTimeString('id-ID');
 }
 
 // ── Data loaders ──────────────────────────────────────
@@ -338,14 +333,6 @@ export function initShopeeEvents() {
       _search = e.target.value.trim();
       applyFilterSort();
     }, 300);
-  });
-
-  // Pagination (delegated to footer)
-  $('shopeeTableFooter')?.addEventListener('click', e => {
-    const btn = e.target.closest('.page-btn');
-    if (!btn) return;
-    _page = parseInt(btn.dataset.p, 10);
-    renderTableSection();
   });
 
   // Load data awal
