@@ -1,5 +1,5 @@
 /**
- * Shopee Livestream — import XLSX, periode filter, sort, footer total.
+ * Shopee Livestream — import XLSX, sub-menu Dashboard & Host.
  */
 import { API_BASE } from './config.js';
 import { initDateRangePicker, getDateRange } from './dateRangePicker.js';
@@ -95,6 +95,9 @@ let _sortDir     = 'desc';
 let _uploading   = false;
 const PAGE_SIZE  = 50;
 
+// Sub-menu state
+let _activeTab = 'dashboard'; // 'dashboard' | 'hosts'
+
 // ── API ───────────────────────────────────────────────
 
 async function apiGet(path) {
@@ -108,6 +111,32 @@ async function uploadXlsx(file) {
   const form = new FormData();
   form.append('file', file);
   const res  = await fetch(`${API_BASE}/shopee/upload`, { method: 'POST', body: form });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+// ── Host API ──────────────────────────────────────────
+
+async function fetchHosts() {
+  return apiGet('/hosts');
+}
+
+async function saveHost(host, id = null) {
+  const url    = id ? `${API_BASE}/shopee/hosts/${id}` : `${API_BASE}/shopee/hosts`;
+  const method = id ? 'PUT' : 'POST';
+  const res    = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(host),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function deleteHostById(id) {
+  const res  = await fetch(`${API_BASE}/shopee/hosts/${id}`, { method: 'DELETE' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
@@ -158,33 +187,125 @@ export function renderShopeePage() {
   return `
     <div class="shopee-page" id="shopeePage">
 
-      <!-- Table card — sama persis dengan Meta Ads -->
-      <div class="card table-card" id="shopeeTableCard" style="display:flex">
-        <div class="card-header">
-          <h3>📋 Riwayat Sesi Livestream</h3>
-          <div class="table-controls">
-            <input type="text" id="shopeeSearch" placeholder="🔍 Cari session ID..." value="${escHtml(_search)}" />
-            <label class="btn-sm btn-outline" for="xlsxFileInput" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
-              📤 Import XLSX
-              <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none" />
-            </label>
-          </div>
-        </div>
+      <!-- Sub-menu tabs -->
+      <div class="shopee-tabs">
+        <button class="shopee-tab ${_activeTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
+          📊 Dashboard
+        </button>
+        <button class="shopee-tab ${_activeTab === 'hosts' ? 'active' : ''}" data-tab="hosts">
+          👤 Host
+        </button>
+      </div>
 
-        <!-- Upload status inside card -->
-        <div id="uploadStatus" style="display:none;margin:0 20px 0;flex-shrink:0"></div>
-
-        <div class="table-wrapper" id="shopeeTableWrap">
-          ${renderTableLoading()}
-        </div>
-
-        <div class="table-footer">
-          <span id="shopeeTableInfo">—</span>
-          <span id="shopeeLastUpdated" style="font-size:12px;color:var(--text-muted)">—</span>
-        </div>
+      <!-- Tab content -->
+      <div id="shopeeTabContent">
+        ${_activeTab === 'dashboard' ? renderDashboardTab() : renderHostsTab()}
       </div>
 
     </div>`;
+}
+
+function renderDashboardTab() {
+  return `
+    <!-- Table card -->
+    <div class="card table-card" id="shopeeTableCard" style="display:flex">
+      <div class="card-header">
+        <h3>📋 Riwayat Sesi Livestream</h3>
+        <div class="table-controls">
+          <input type="text" id="shopeeSearch" placeholder="🔍 Cari session ID..." value="${escHtml(_search)}" />
+          <label class="btn-sm btn-outline" for="xlsxFileInput" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+            📤 Import XLSX
+            <input type="file" id="xlsxFileInput" accept=".xlsx,.xls" style="display:none" />
+          </label>
+        </div>
+      </div>
+      <div id="uploadStatus" style="display:none;margin:0 20px;flex-shrink:0"></div>
+      <div class="table-wrapper" id="shopeeTableWrap">
+        ${renderTableLoading()}
+      </div>
+      <div class="table-footer">
+        <span id="shopeeTableInfo">—</span>
+        <span id="shopeeLastUpdated" style="font-size:12px;color:var(--text-muted)">—</span>
+      </div>
+    </div>`;
+}
+
+function renderHostsTab(hosts = null) {
+  return `
+    <div class="card table-card" style="display:flex">
+      <div class="card-header">
+        <h3>👤 Manajemen Host</h3>
+        <div class="table-controls">
+          <button class="btn-primary" id="btnAddHost">+ Tambah Host</button>
+        </div>
+      </div>
+
+      <!-- Add/Edit form (hidden by default) -->
+      <div id="hostFormWrap" style="display:none;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div class="host-form">
+          <input type="hidden" id="hostEditId" />
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nama Host <span class="required">*</span></label>
+              <input type="text" id="hostName" placeholder="Nama lengkap host..." />
+            </div>
+            <div class="form-group">
+              <label>No. HP</label>
+              <input type="text" id="hostPhone" placeholder="08xxxxxxxxxx" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Catatan</label>
+            <input type="text" id="hostNotes" placeholder="Catatan opsional..." />
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" id="btnCancelHost">Batal</button>
+            <button class="btn-primary" id="btnSaveHost">Simpan</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrapper" id="hostsTableWrap">
+        <div class="shopee-loading"><div class="spinner"></div><p>Memuat host...</p></div>
+      </div>
+      <div class="table-footer">
+        <span id="hostsInfo">—</span>
+      </div>
+    </div>`;
+}
+
+function renderHostsTable(hosts) {
+  if (!hosts.length) return `
+    <div class="empty-state">
+      <div class="empty-icon">👤</div>
+      <p>Belum ada host. Tambah host pertama.</p>
+    </div>`;
+
+  return `
+    <table>
+      <thead><tr>
+        <th>Nama</th>
+        <th>No. HP</th>
+        <th>Catatan</th>
+        <th>Dibuat</th>
+        <th style="width:100px"></th>
+      </tr></thead>
+      <tbody>
+        ${hosts.map(h => `
+          <tr>
+            <td><strong>${escHtml(h.name)}</strong></td>
+            <td>${h.phone ? escHtml(h.phone) : '<span style="color:var(--text-muted)">—</span>'}</td>
+            <td style="color:var(--text-muted);font-size:12px">${h.notes ? escHtml(h.notes) : '—'}</td>
+            <td style="font-size:11px;color:var(--text-muted)">${fmtDate(h.created_at)}</td>
+            <td>
+              <div style="display:flex;gap:6px;justify-content:flex-end">
+                <button class="btn-sm btn-outline btn-edit-host" data-id="${h.id}" data-name="${escHtml(h.name)}" data-phone="${escHtml(h.phone||'')}" data-notes="${escHtml(h.notes||'')}">✏️</button>
+                <button class="btn-sm btn-danger btn-del-host" data-id="${h.id}" data-name="${escHtml(h.name)}">🗑</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
 
 function renderTableLoading() {
@@ -285,16 +406,58 @@ async function refreshAll() {
 export function initShopeeEvents() {
   const $ = id => document.getElementById(id);
 
-  // Date range picker — ada di topbar, id prefix 'shopee'
+  // ── Tab switching ─────────────────────────────────────
+  document.getElementById('shopeePage')?.addEventListener('click', e => {
+    const tab = e.target.closest('.shopee-tab');
+    if (!tab) return;
+    const newTab = tab.dataset.tab;
+    if (newTab === _activeTab) return;
+    _activeTab = newTab;
+
+    // Update tab active class
+    document.querySelectorAll('.shopee-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.tab === _activeTab)
+    );
+
+    // Re-render tab content
+    const content = document.getElementById('shopeeTabContent');
+    if (!content) return;
+
+    if (_activeTab === 'dashboard') {
+      content.innerHTML = renderDashboardTab();
+      wireDashboardEvents();
+      refreshSessions();
+    } else if (_activeTab === 'hosts') {
+      content.innerHTML = renderHostsTab();
+      wireHostEvents();
+      loadHosts();
+    }
+  });
+
+  // ── Init active tab ────────────────────────────────────
+  if (_activeTab === 'dashboard') {
+    wireDashboardEvents();
+    refreshAll();
+  } else {
+    wireHostEvents();
+    loadHosts();
+  }
+
+  // ── Date range picker — topbar ─────────────────────────
   initDateRangePicker('shopee', (since, until, range) => {
     _dateRange   = range;
     _customSince = since;
     _customUntil = until;
     _page        = 1;
-    refreshAll();
+    if (_activeTab === 'dashboard') refreshAll();
   });
+}
 
-  // File upload
+// ── Dashboard events ──────────────────────────────────
+
+function wireDashboardEvents() {
+  const $ = id => document.getElementById(id);
+
   $('xlsxFileInput')?.addEventListener('change', async (e) => {
     const file = e.target.files?.[0];
     if (!file || _uploading) return;
@@ -312,7 +475,6 @@ export function initShopeeEvents() {
     }
   });
 
-  // Search
   let searchTimer;
   $('shopeeSearch')?.addEventListener('input', e => {
     clearTimeout(searchTimer);
@@ -321,9 +483,102 @@ export function initShopeeEvents() {
       applyFilterSort();
     }, 300);
   });
+}
 
-  // Load data awal
-  refreshAll();
+// ── Host events ───────────────────────────────────────
+
+function wireHostEvents() {
+  const $ = id => document.getElementById(id);
+
+  // Show add form
+  $('btnAddHost')?.addEventListener('click', () => {
+    $('hostEditId').value  = '';
+    $('hostName').value    = '';
+    $('hostPhone').value   = '';
+    $('hostNotes').value   = '';
+    $('hostFormWrap').style.display = 'block';
+    $('hostName').focus();
+  });
+
+  // Cancel form
+  $('btnCancelHost')?.addEventListener('click', () => {
+    $('hostFormWrap').style.display = 'none';
+  });
+
+  // Save host
+  $('btnSaveHost')?.addEventListener('click', async () => {
+    const id    = $('hostEditId').value;
+    const name  = $('hostName').value.trim();
+    const phone = $('hostPhone').value.trim();
+    const notes = $('hostNotes').value.trim();
+
+    if (!name) { alert('Nama host wajib diisi'); $('hostName').focus(); return; }
+
+    const btn = $('btnSaveHost');
+    btn.disabled    = true;
+    btn.textContent = '⏳ Menyimpan...';
+
+    try {
+      await saveHost({ name, phone, notes }, id ? parseInt(id, 10) : null);
+      $('hostFormWrap').style.display = 'none';
+      await loadHosts();
+    } catch (err) {
+      alert('Gagal: ' + err.message);
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Simpan';
+    }
+  });
+
+  // Save on Enter in inputs
+  [$('hostName'), $('hostPhone'), $('hostNotes')].forEach(el => {
+    el?.addEventListener('keydown', e => { if (e.key === 'Enter') $('btnSaveHost')?.click(); });
+  });
+
+  // Edit / Delete (delegated)
+  $('hostsTableWrap')?.addEventListener('click', async e => {
+    const editBtn = e.target.closest('.btn-edit-host');
+    const delBtn  = e.target.closest('.btn-del-host');
+
+    if (editBtn) {
+      const $ = id => document.getElementById(id);
+      $('hostEditId').value  = editBtn.dataset.id;
+      $('hostName').value    = editBtn.dataset.name;
+      $('hostPhone').value   = editBtn.dataset.phone;
+      $('hostNotes').value   = editBtn.dataset.notes;
+      $('hostFormWrap').style.display = 'block';
+      $('hostName').focus();
+    }
+
+    if (delBtn) {
+      const name = delBtn.dataset.name;
+      if (!confirm(`Hapus host "${name}"?`)) return;
+      try {
+        await deleteHostById(parseInt(delBtn.dataset.id, 10));
+        await loadHosts();
+      } catch (err) {
+        alert('Gagal hapus: ' + err.message);
+      }
+    }
+  });
+}
+
+async function loadHosts() {
+  const wrap = document.getElementById('hostsTableWrap');
+  const info = document.getElementById('hostsInfo');
+  if (!wrap) return;
+
+  try {
+    const hosts = await fetchHosts();
+    wrap.innerHTML = renderHostsTable(hosts);
+    if (info) info.textContent = `${hosts.length} host`;
+  } catch (err) {
+    wrap.innerHTML = `<div class="shopee-error">⚠️ ${escHtml(err.message)}</div>`;
+  }
+}
+
+async function refreshSessions() {
+  await refreshAll();
 }
 
 function showUploadStatus(type, msg) {
