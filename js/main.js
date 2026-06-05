@@ -77,10 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Boot ke halaman Meta Ads
-  showPage('meta-ads');
-
-  // Resolve token
+  // Resolve token DULU sebelum render halaman
   const stored = localStorage.getItem(LS_TOKEN);
   let token    = stored || '';
 
@@ -94,6 +91,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (token) setToken(token);
+
+  // Boot ke halaman Meta Ads setelah token ready
+  showPage('meta-ads');
+
+  // Token inspect + auto-extend di background
   if (token) TokenManager.init(token).catch(console.warn);
 
   await loadDashboard();
