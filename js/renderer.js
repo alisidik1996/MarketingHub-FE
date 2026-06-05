@@ -13,50 +13,61 @@ import { getDatePreset } from './helpers.js';
 
 const $ = id => document.getElementById(id);
 
-const dom = {
-  accountBar:        $('accountBar'),
-  accountName:       $('accountName'),
-  accountIdDisplay:  $('accountIdDisplay'),
-  accountSpendInfo:  $('accountSpendInfo'),
-  tableCard:         $('tableCard'),
-  searchCampaign:    $('searchCampaign'),
-  filterStatus:      $('filterStatus'),
-  campaignTableBody: $('campaignTableBody'),
-  tableInfo:         $('tableInfo'),
-  pagination:        $('pagination'),
-  adsetDrawer:       $('adsetDrawer'),
-  drawerOverlay:     $('drawerOverlay'),
-  drawerTitle:       $('drawerTitle'),
-  drawerSubtitle:    $('drawerSubtitle'),
-  drawerBreadcrumb:  $('drawerBreadcrumb'),
-  drawerBody:        $('drawerBody'),
-  loadingOverlay:    $('loadingOverlay'),
-  loadingText:       $('loadingText'),
-  errorBanner:       $('errorBanner'),
-  errorMessage:      $('errorMessage'),
-  lastUpdated:       $('lastUpdated'),
-};
+// Lazy dom refs — diakses saat fungsi dipanggil, bukan saat module load
+function getDom() {
+  return {
+    accountBar:        $('accountBar'),
+    accountName:       $('accountName'),
+    accountIdDisplay:  $('accountIdDisplay'),
+    accountSpendInfo:  $('accountSpendInfo'),
+    tableCard:         $('tableCard'),
+    searchCampaign:    $('searchCampaign'),
+    filterStatus:      $('filterStatus'),
+    campaignTableBody: $('campaignTableBody'),
+    tableInfo:         $('tableInfo'),
+    pagination:        $('pagination'),
+    adsetDrawer:       $('adsetDrawer'),
+    drawerOverlay:     $('drawerOverlay'),
+    drawerTitle:       $('drawerTitle'),
+    drawerSubtitle:    $('drawerSubtitle'),
+    drawerBreadcrumb:  $('drawerBreadcrumb'),
+    drawerBody:        $('drawerBody'),
+    loadingOverlay:    $('loadingOverlay'),
+    loadingText:       $('loadingText'),
+    errorBanner:       $('errorBanner'),
+    errorMessage:      $('errorMessage'),
+    lastUpdated:       $('lastUpdated'),
+  };
+}
 
 // ── Loading / Error ───────────────────────────────────
 
 export function showError(msg) {
+  const dom = getDom();
+  if (!dom.errorMessage || !dom.errorBanner) return;
   dom.errorMessage.textContent = msg;
   dom.errorBanner.style.display = 'flex';
   setTimeout(() => { dom.errorBanner.style.display = 'none'; }, 10000);
 }
 
 export function showLoading(text = 'Mengambil data...') {
+  const dom = getDom();
+  if (!dom.loadingText || !dom.loadingOverlay) return;
   dom.loadingText.textContent = text;
   dom.loadingOverlay.style.display = 'flex';
 }
 
 export function hideLoading() {
+  const dom = getDom();
+  if (!dom.loadingOverlay) return;
   dom.loadingOverlay.style.display = 'none';
 }
 
 // ── Account bar ───────────────────────────────────────
 
 export function renderAccountBar(accInfo) {
+  const dom = getDom();
+  if (!dom.accountName) return;
   const { name, currency, amount_spent, balance, spend_cap } = accInfo;
   const cur = currency || 'IDR';
   state.accountName     = name || 'Ad Account';
@@ -130,6 +141,8 @@ function buildRow(c) {
 // ── Table render ──────────────────────────────────────
 
 export function applyFiltersAndSort() {
+  const dom = getDom();
+  if (!dom.searchCampaign) return;
   const search = dom.searchCampaign.value.toLowerCase();
   const sf     = dom.filterStatus.value;
 
@@ -153,6 +166,8 @@ export function applyFiltersAndSort() {
 }
 
 export function renderTablePage() {
+  const dom = getDom();
+  if (!dom.tableCard) return;
   const list    = state.filteredCampaigns;
   const cur     = state.accountCurrency;
   const columns = getActiveColumns();
@@ -250,6 +265,7 @@ export function renderTablePage() {
 const drawerNav = [];
 
 export function openDrawer(campaignId, campaignName) {
+  const dom = getDom();
   state.drawerCampaignId = campaignId;
   drawerNav.length = 0;
   dom.adsetDrawer.classList.add('open');
@@ -258,13 +274,16 @@ export function openDrawer(campaignId, campaignName) {
 }
 
 export function closeDrawer() {
+  const dom = getDom();
+  if (!dom.adsetDrawer) return;
   dom.adsetDrawer.classList.remove('open');
   dom.drawerOverlay.classList.remove('open');
   drawerNav.length = 0;
 }
 
 function renderBreadcrumb() {
-  const bc = dom.drawerBreadcrumb;
+  const dom = getDom();
+  const bc  = dom.drawerBreadcrumb;
   if (!bc) return;
   bc.innerHTML = drawerNav.map((n, i) =>
     i < drawerNav.length - 1
@@ -281,6 +300,8 @@ function renderBreadcrumb() {
 }
 
 async function loadAdSetsInDrawer(campaignId, campaignName) {
+  const dom = getDom();
+  if (!dom.drawerBody) return;
   drawerNav.push({ label: campaignName, action: () => loadAdSetsInDrawer(campaignId, campaignName) });
   dom.drawerTitle.textContent    = campaignName;
   dom.drawerSubtitle.textContent = 'Ad Sets';
@@ -335,6 +356,8 @@ async function loadAdSetsInDrawer(campaignId, campaignName) {
 }
 
 async function loadAdsInDrawer(campaignId, adsetId, adsetName) {
+  const dom = getDom();
+  if (!dom.drawerBody) return;
   drawerNav.push({ label: adsetName, action: () => loadAdsInDrawer(campaignId, adsetId, adsetName) });
   dom.drawerTitle.textContent    = adsetName;
   dom.drawerSubtitle.textContent = 'Ads';

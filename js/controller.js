@@ -19,7 +19,6 @@ const $ = id => document.getElementById(id);
 const dom = {
   sidebar:           $('sidebar'),
   sidebarToggle:     $('sidebarToggle'),
-  btnRefresh:        $('btnRefresh'),
   adGroupTabs:       $('adGroupTabs'),
   searchCampaign:    $('searchCampaign'),
   filterStatus:      $('filterStatus'),
@@ -149,13 +148,15 @@ export function initEvents() {
     loadDashboard();
   });
 
-  dom.btnRefresh.addEventListener('click', async () => {
-    dom.btnRefresh.classList.add('spinning');
+  // btnRefresh di topbar — query saat initEvents dipanggil (sudah ada di DOM)
+  document.getElementById('btnRefresh')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnRefresh');
+    btn?.classList.add('spinning');
     await loadDashboard();
-    dom.btnRefresh.classList.remove('spinning');
+    btn?.classList.remove('spinning');
   });
 
-  dom.adGroupTabs.addEventListener('click', async e => {
+  dom.adGroupTabs?.addEventListener('click', async e => {
     const btn = e.target.closest('.adgroup-tab');
     if (!btn) return;
     const group = btn.dataset.group;
@@ -167,19 +168,19 @@ export function initEvents() {
     await loadDashboard();
   });
 
-  dom.searchCampaign.addEventListener('input', applyFiltersAndSort);
-  dom.filterStatus.addEventListener('change', applyFiltersAndSort);
-  dom.btnExportCSV.addEventListener('click', exportCSV);
+  dom.searchCampaign?.addEventListener('input', applyFiltersAndSort);
+  dom.filterStatus?.addEventListener('change', applyFiltersAndSort);
+  dom.btnExportCSV?.addEventListener('click', exportCSV);
 
-  dom.campaignTableBody.addEventListener('click', e => {
+  dom.campaignTableBody?.addEventListener('click', e => {
     const btn = e.target.closest('.btn-detail');
     if (btn) openDrawer(btn.dataset.id, btn.dataset.name);
   });
 
-  dom.btnCloseDrawer.addEventListener('click', closeDrawer);
-  dom.drawerOverlay.addEventListener('click', closeDrawer);
+  dom.btnCloseDrawer?.addEventListener('click', closeDrawer);
+  dom.drawerOverlay?.addEventListener('click', closeDrawer);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
-  dom.btnDismissError.addEventListener('click', () => {
-    $('errorBanner').style.display = 'none';
+  dom.btnDismissError?.addEventListener('click', () => {
+    $('errorBanner')?.style && ($('errorBanner').style.display = 'none');
   });
 }
