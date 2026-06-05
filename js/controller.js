@@ -49,7 +49,7 @@ function closeSidebarMobile() {
 
 // ── Load dashboard ────────────────────────────────────
 
-export async function loadDashboard() {
+export async function loadDashboard(forceRefreshAccount = false) {
   showLoading('Mengambil data kampanye...');
 
   // Support custom date range
@@ -59,13 +59,19 @@ export async function loadDashboard() {
 
   try {
     const isCpas = state.activeAdGroup === 'CPAS Ads';
-    const [accInfo, campaigns, campaignInsights] = await Promise.all([
-      fetchAccount(state.accountId),
+
+    // Account info di-fetch sekali saja (atau saat forceRefreshAccount)
+    // Saldo tidak berubah dengan periode — tidak perlu re-fetch
+    if (!state._accountCached || forceRefreshAccount) {
+      const accInfo = await fetchAccount(state.accountId);
+      renderAccountBar(accInfo);
+      state._accountCached = true;
+    }
+
+    const [campaigns, campaignInsights] = await Promise.all([
       fetchCampaigns(state.accountId),
       fetchCampaignInsights(state.accountId, dp, isCpas),
     ]);
-
-    renderAccountBar(accInfo);
 
     state.campaigns    = campaigns;
     state.insightMap   = {};
@@ -163,8 +169,9 @@ export function initEvents() {
     if (group === state.activeAdGroup) return;
     document.querySelectorAll('.adgroup-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-    state.activeAdGroup = group;
-    state.accountId     = AD_GROUPS[group];
+    state.activeAdGroup  = group;
+    state.accountId      = AD_GROUPS[group];
+    state._accountCached = false; // reset agar account info di-fetch ulang
     await loadDashboard();
   });
 
