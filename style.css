@@ -2906,3 +2906,36 @@ tfoot .col-sticky {
 .shopee-table-wrapper th.num {
   text-align: right;
 }
+
+/* =====================================================
+   DATE RANGE PICKER — custom date inputs
+   ===================================================== */
+
+.drp-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.drp-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.drp-custom input[type="date"] {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  color-scheme: dark;
+}
+
+.drp-custom input[type="date"]:focus { border-color: var(--accent); }

@@ -11,6 +11,7 @@ import {
   fetchAccount, fetchCampaigns, fetchCampaignInsights,
 } from './api.js';
 import { getDatePreset } from './helpers.js';
+import { initDateRangePicker } from './dateRangePicker.js';
 import { AD_GROUPS } from './config.js';
 
 const $ = id => document.getElementById(id);
@@ -18,7 +19,6 @@ const $ = id => document.getElementById(id);
 const dom = {
   sidebar:           $('sidebar'),
   sidebarToggle:     $('sidebarToggle'),
-  dateRange:         $('dateRange'),
   btnRefresh:        $('btnRefresh'),
   adGroupTabs:       $('adGroupTabs'),
   searchCampaign:    $('searchCampaign'),
@@ -52,7 +52,11 @@ function closeSidebarMobile() {
 
 export async function loadDashboard() {
   showLoading('Mengambil data kampanye...');
-  const dp = getDatePreset(state.dateRange);
+
+  // Support custom date range
+  const dp = state.dateRange === 'custom'
+    ? { since: state._customSince || '', until: state._customUntil || '' }
+    : getDatePreset(state.dateRange);
 
   try {
     const isCpas = state.activeAdGroup === 'CPAS Ads';
@@ -137,8 +141,11 @@ export function initEvents() {
     if (window.innerWidth >= 768) closeSidebarMobile();
   });
 
-  dom.dateRange.addEventListener('change', () => {
-    state.dateRange = dom.dateRange.value;
+  // Date range picker — di topbar, id prefix 'meta'
+  initDateRangePicker('meta', (since, until, range) => {
+    state.dateRange    = range;
+    state._customSince = since;
+    state._customUntil = until;
     loadDashboard();
   });
 

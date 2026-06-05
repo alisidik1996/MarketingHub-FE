@@ -2,6 +2,7 @@
  * Shopee Livestream — import XLSX, periode filter, sort, footer total.
  */
 import { API_BASE } from './config.js';
+import { initDateRangePicker, getDateRange } from './dateRangePicker.js';
 
 // ── Helpers ───────────────────────────────────────────
 
@@ -87,6 +88,8 @@ let _filtered    = [];
 let _page        = 1;
 let _search      = '';
 let _dateRange   = 'last_30d';
+let _customSince = '';
+let _customUntil = '';
 let _sortKey     = 'start_date';
 let _sortDir     = 'desc';
 let _uploading   = false;
@@ -111,7 +114,9 @@ async function uploadXlsx(file) {
 }
 
 async function loadSessions() {
-  const { since, until } = getDatePreset(_dateRange);
+  const { since, until } = _dateRange === 'custom'
+    ? { since: _customSince, until: _customUntil }
+    : getDateRange(_dateRange);
   const q = new URLSearchParams({ limit: 1000, offset: 0, search: '' });
   if (since) q.set('since', since);
   if (until) q.set('until', until);
@@ -280,6 +285,15 @@ async function refreshAll() {
 export function initShopeeEvents() {
   const $ = id => document.getElementById(id);
 
+  // Date range picker — ada di topbar, id prefix 'shopee'
+  initDateRangePicker('shopee', (since, until, range) => {
+    _dateRange   = range;
+    _customSince = since;
+    _customUntil = until;
+    _page        = 1;
+    refreshAll();
+  });
+
   // File upload
   $('xlsxFileInput')?.addEventListener('change', async (e) => {
     const file = e.target.files?.[0];
@@ -296,13 +310,6 @@ export function initShopeeEvents() {
       _uploading     = false;
       e.target.value = '';
     }
-  });
-
-  // Date range — ada di topbar
-  $('shopeeDateRange')?.addEventListener('change', e => {
-    _dateRange = e.target.value;
-    _page      = 1;
-    refreshAll();
   });
 
   // Search

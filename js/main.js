@@ -7,6 +7,8 @@ import { setToken, fetchFallbackToken } from './api.js';
 import { LS_TOKEN }                  from './config.js';
 import { renderAgentsPage, initAgentEvents } from './agents.js';
 import { renderShopeePage, initShopeeEvents } from './shopee.js';
+import { renderDateRangePicker, initDateRangePicker } from './dateRangePicker.js';
+import { state as metaState } from './state.js';
 
 // ── Page navigation ───────────────────────────────────
 
@@ -23,20 +25,9 @@ function showPage(page) {
   if (page === 'meta-ads') {
     document.getElementById('page-meta-ads').classList.add('active');
     document.querySelector('.topbar-left h1').textContent = 'Meta Ads Monitor';
-    // Restore topbar-right Meta Ads (reload dari index.html original)
     topbarRight.style.display = '';
     topbarRight.innerHTML = `
-      <div class="date-range-picker">
-        <label>Periode:</label>
-        <select id="dateRange">
-          <option value="today">Hari Ini</option>
-          <option value="yesterday">Kemarin</option>
-          <option value="last_7d" selected>7 Hari Terakhir</option>
-          <option value="last_30d">30 Hari Terakhir</option>
-          <option value="this_month">Bulan Ini</option>
-          <option value="last_month">Bulan Lalu</option>
-        </select>
-      </div>
+      ${renderDateRangePicker('meta', metaState.dateRange || 'last_7d')}
       <button class="btn-refresh" id="btnRefresh">
         <span class="refresh-icon">↻</span> Refresh
       </button>
@@ -47,7 +38,14 @@ function showPage(page) {
         <button class="btn-extend-token" id="btnExtendToken">🔄 Perpanjang</button>
       </div>
     `;
-    // Re-wire Meta Ads events
+    // Init date picker — trigger loadDashboard on change
+    initDateRangePicker('meta', (since, until, range) => {
+      metaState.dateRange = range === 'custom' ? `${since}:${until}` : range;
+      // store custom dates for controller to pick up
+      metaState._customSince = since;
+      metaState._customUntil = until;
+      loadDashboard();
+    });
     initEvents();
   } else if (page === 'ai-agents') {
     const pageEl = document.getElementById('page-ai-agents');
@@ -63,20 +61,7 @@ function showPage(page) {
     pageEl.classList.add('active');
     document.querySelector('.topbar-left h1').textContent = 'Shopee Livestream';
     topbarRight.style.display = '';
-    topbarRight.innerHTML = `
-      <div class="date-range-picker">
-        <label>Periode:</label>
-        <select id="shopeeDateRange">
-          <option value="today">Hari Ini</option>
-          <option value="yesterday">Kemarin</option>
-          <option value="last_7d">7 Hari Terakhir</option>
-          <option value="last_30d" selected>30 Hari Terakhir</option>
-          <option value="this_month">Bulan Ini</option>
-          <option value="last_month">Bulan Lalu</option>
-          <option value="all">Semua Data</option>
-        </select>
-      </div>
-    `;
+    topbarRight.innerHTML = renderDateRangePicker('shopee', 'last_30d', true);
     initShopeeEvents();
   }
 }
@@ -92,10 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Wire up Meta Ads events
-  initEvents();
+  // Boot ke halaman Meta Ads
+  showPage('meta-ads');
 
-  // Resolve token: localStorage → backend env → kosong
+  // Resolve token
   const stored = localStorage.getItem(LS_TOKEN);
   let token    = stored || '';
 
