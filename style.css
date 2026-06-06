@@ -2974,3 +2974,53 @@ tfoot .col-sticky {
   gap: 12px;
   max-width: 700px;
 }
+
+/* ── Host badge in table ── */
+.host-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  min-width: 120px;
+}
+
+.host-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(238,77,45,0.12);
+  color: #ee4d2d;
+  border: 1px solid rgba(238,77,45,0.3);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition);
+}
+.host-badge:hover { background: rgba(238,77,45,0.25); }
+
+.btn-assign-host {
+  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Assign modal row ── */
+.assign-host-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}

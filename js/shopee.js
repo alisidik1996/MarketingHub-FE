@@ -52,6 +52,7 @@ function getDatePreset(range) {
 // ── Column definitions ────────────────────────────────
 
 const COLS = [
+  { key: 'host',                label: 'Host',                 num: false, sortable: false },
   { key: 'session_id',          label: 'Session ID',           num: false, sortable: false },
   { key: 'start_date',          label: 'Start Date',           num: false, sortable: true  },
   { key: 'total_views',         label: 'Total Views',          num: true,  sortable: true  },
@@ -85,6 +86,8 @@ const IDR_COLS = new Set(['gross_sales_local','net_sales_local']);
 
 let _allSessions = [];
 let _filtered    = [];
+let _hostMap     = {}; // { session_id: [host, ...] }
+let _allHosts    = []; // semua host untuk dropdown assign
 let _page        = 1;
 let _search      = '';
 let _dateRange   = 'last_30d';
@@ -118,25 +121,37 @@ async function uploadXlsx(file) {
 
 // ── Host API ──────────────────────────────────────────
 
-async function fetchHosts() {
-  return apiGet('/hosts');
-}
+async function fetchHosts() { return apiGet('/hosts'); }
+
+async function fetchSessionHostMap() { return apiGet('/session-hosts'); }
 
 async function saveHost(host, id = null) {
   const url    = id ? `${API_BASE}/shopee/hosts/${id}` : `${API_BASE}/shopee/hosts`;
   const method = id ? 'PUT' : 'POST';
-  const res    = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(host),
-  });
-  const data = await res.json();
+  const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(host) });
+  const data   = await res.json();
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
 }
 
 async function deleteHostById(id) {
   const res  = await fetch(`${API_BASE}/shopee/hosts/${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function assignHostToSession(sessionId, hostId) {
+  const res  = await fetch(`${API_BASE}/shopee/sessions/${sessionId}/hosts`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ host_id: hostId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function unassignHostFromSession(sessionId, hostId) {
+  const res  = await fetch(`${API_BASE}/shopee/sessions/${sessionId}/hosts/${hostId}`, { method: 'DELETE' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
@@ -207,6 +222,20 @@ export function renderShopeePage() {
 
 function renderDashboardTab() {
   return `
+    <!-- Assign host modal -->
+    <div class="modal-overlay" id="assignModalOverlay" style="display:none">
+      <div class="modal" style="max-width:360px">
+        <div class="modal-header">
+          <h3>Assign Host</h3>
+          <button class="btn-close-modal" id="btnCloseAssign">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Pilih host untuk sesi ini:</p>
+          <div id="assignHostList" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Table card -->
     <div class="card table-card" id="shopeeTableCard" style="display:flex">
       <div class="card-header">
@@ -337,18 +366,23 @@ function renderTableSection() {
   }).join('');
 
   // Rows
-  const tbody = page.map(s => `
-    <tr>
-      ${COLS.map(c => {
-        const v = s[c.key];
-        if (c.key === 'session_id') return `<td style="font-size:11px;font-family:monospace;white-space:nowrap">${escHtml(v)}</td>`;
-        if (c.key === 'start_date') return `<td style="white-space:nowrap;font-size:12px">${fmtDate(v)}</td>`;
-        if (!c.num) return `<td style="white-space:nowrap">${v ?? '—'}</td>`;
-        const n = parseFloat(v) || 0;
-        if (IDR_COLS.has(c.key)) return `<td class="num">${n > 0 ? fmtIDR(n) : '—'}</td>`;
-        return `<td class="num">${n > 0 ? fmtNum(n) : '—'}</td>`;
-      }).join('')}
-    </tr>`).join('');
+  const tbody = page.map(s => {
+    const hosts  = _hostMap[s.session_id] || [];
+    const badges = hosts.map(h =>
+      `<span class="host-badge" data-session="${escHtml(s.session_id)}" data-hid="${h.id}" data-hname="${escHtml(h.name)}">${escHtml(h.name)} ✕</span>`
+    ).join('');
+
+    return `<tr>${COLS.map(c => {
+      if (c.key === 'host') return `<td><div class="host-cell">${badges}<button class="btn-assign-host btn-sm btn-outline" data-session="${escHtml(s.session_id)}">＋</button></div></td>`;
+      const v = s[c.key];
+      if (c.key === 'session_id') return `<td style="font-size:11px;font-family:monospace;white-space:nowrap">${escHtml(v)}</td>`;
+      if (c.key === 'start_date') return `<td style="white-space:nowrap;font-size:12px">${fmtDate(v)}</td>`;
+      if (!c.num) return `<td style="white-space:nowrap">${v ?? '—'}</td>`;
+      const n = parseFloat(v) || 0;
+      if (IDR_COLS.has(c.key)) return `<td class="num">${n > 0 ? fmtIDR(n) : '—'}</td>`;
+      return `<td class="num">${n > 0 ? fmtNum(n) : '—'}</td>`;
+    }).join('')}</tr>`;
+  }).join('');
 
   // Footer totals — pakai class foot-label dan foot-val sama dengan Meta Ads
   const totals = {};
@@ -393,8 +427,15 @@ async function refreshAll() {
   if (tableEl)  tableEl.innerHTML = renderTableLoading();
 
   try {
-    const result = await loadSessions();
+    // Load sessions + host map paralel
+    const [result, hostMap, hosts] = await Promise.all([
+      loadSessions(),
+      fetchSessionHostMap().catch(() => ({})),
+      fetchHosts().catch(() => []),
+    ]);
     _allSessions = result.data || [];
+    _hostMap     = hostMap;
+    _allHosts    = hosts;
     applyFilterSort();
   } catch (err) {
     if (tableEl) tableEl.innerHTML = `<div class="shopee-error">⚠️ ${escHtml(err.message)}</div>`;
@@ -483,6 +524,108 @@ function wireDashboardEvents() {
       applyFilterSort();
     }, 300);
   });
+
+  // ── Assign / unassign host (delegated ke table wrapper) ──
+  let _assignSessionId = null;
+
+  $('shopeeTableWrap')?.addEventListener('click', async e => {
+    // Klik tombol ＋ → buka modal assign
+    const assignBtn = e.target.closest('.btn-assign-host');
+    if (assignBtn) {
+      _assignSessionId = assignBtn.dataset.session;
+      openAssignModal(_assignSessionId);
+      return;
+    }
+
+    // Klik badge host → unassign
+    const badge = e.target.closest('.host-badge');
+    if (badge) {
+      const sid = badge.dataset.session;
+      const hid = badge.dataset.hid;
+      const hname = badge.dataset.hname;
+      if (!confirm(`Hapus host "${hname}" dari sesi ini?`)) return;
+      badge.style.opacity = '0.5';
+      try {
+        await unassignHostFromSession(sid, parseInt(hid, 10));
+        // Update local map
+        if (_hostMap[sid]) _hostMap[sid] = _hostMap[sid].filter(h => String(h.id) !== String(hid));
+        renderTableSection();
+      } catch (err) {
+        alert('Gagal: ' + err.message);
+        badge.style.opacity = '1';
+      }
+    }
+  });
+
+  // ── Assign modal events ──
+  $('btnCloseAssign')?.addEventListener('click', closeAssignModal);
+  $('assignModalOverlay')?.addEventListener('click', e => {
+    if (e.target === $('assignModalOverlay')) closeAssignModal();
+  });
+
+  function openAssignModal(sessionId) {
+    const overlay  = $('assignModalOverlay');
+    const listEl   = $('assignHostList');
+    if (!overlay || !listEl) return;
+
+    const assigned = (_hostMap[sessionId] || []).map(h => h.id);
+
+    listEl.innerHTML = _allHosts.map(h => {
+      const isAssigned = assigned.includes(h.id);
+      return `
+        <div class="assign-host-row">
+          <div>
+            <strong>${escHtml(h.name)}</strong>
+            ${h.phone ? `<span style="color:var(--text-muted);font-size:12px;margin-left:8px">${escHtml(h.phone)}</span>` : ''}
+          </div>
+          <button class="btn-sm ${isAssigned ? 'btn-danger' : 'btn-primary'} btn-toggle-host"
+            data-hid="${h.id}" data-hname="${escHtml(h.name)}" data-assigned="${isAssigned}">
+            ${isAssigned ? '✕ Hapus' : '＋ Assign'}
+          </button>
+        </div>`;
+    }).join('') || '<p style="color:var(--text-muted);text-align:center">Belum ada host. Tambah host dulu di tab Host.</p>';
+
+    overlay.style.display = 'flex';
+
+    // Wire toggle buttons
+    listEl.querySelectorAll('.btn-toggle-host').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const hid      = parseInt(btn.dataset.hid, 10);
+        const hname    = btn.dataset.hname;
+        const assigned = btn.dataset.assigned === 'true';
+        btn.disabled   = true;
+
+        try {
+          if (assigned) {
+            await unassignHostFromSession(sessionId, hid);
+            if (_hostMap[sessionId]) _hostMap[sessionId] = _hostMap[sessionId].filter(h => h.id !== hid);
+            btn.dataset.assigned   = 'false';
+            btn.className          = 'btn-sm btn-primary btn-toggle-host';
+            btn.textContent        = '＋ Assign';
+          } else {
+            await assignHostToSession(sessionId, hid);
+            if (!_hostMap[sessionId]) _hostMap[sessionId] = [];
+            const host = _allHosts.find(h => h.id === hid);
+            if (host && !_hostMap[sessionId].find(h => h.id === hid)) _hostMap[sessionId].push(host);
+            btn.dataset.assigned   = 'true';
+            btn.className          = 'btn-sm btn-danger btn-toggle-host';
+            btn.textContent        = '✕ Hapus';
+          }
+          renderTableSection();
+        } catch (err) {
+          alert('Gagal: ' + err.message);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  function closeAssignModal() {
+    const el = $('assignModalOverlay');
+    if (el) el.style.display = 'none';
+    _assignSessionId = null;
+  }
 }
 
 // ── Host events ───────────────────────────────────────
