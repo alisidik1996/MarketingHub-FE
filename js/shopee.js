@@ -99,7 +99,10 @@ let _uploading   = false;
 const PAGE_SIZE  = 50;
 
 // Sub-menu state
-let _activeTab = 'dashboard'; // 'dashboard' | 'hosts'
+let _activeTab    = 'dashboard';
+let _perfSortKey  = 'total_net';
+let _perfSortDir  = 'desc';
+let _perfData     = [];
 
 // ── API ───────────────────────────────────────────────
 
@@ -757,7 +760,7 @@ function renderPerformanceTab() {
       </div>
       <div class="table-footer">
         <span id="perfInfo">—</span>
-        <span style="font-size:11px;color:var(--text-muted)">Score = Orders×40 + Gross×0.001×30 + Views×0.01×20 + Followers×10</span>
+        <span style="font-size:11px;color:var(--text-muted)">🥇🥈🥉 berdasarkan Net Sales terbanyak</span>
       </div>
     </div>`;
 }
@@ -769,55 +772,76 @@ function renderPerformanceTable(data) {
       <p>Belum ada data. Assign host ke session livestream terlebih dahulu.</p>
     </div>`;
 
-  const maxScore = data[0]?.score || 1;
-  const medals   = ['🥇','🥈','🥉'];
+  const medals = ['🥇','🥈','🥉'];
+
+  // Sort state khusus performance table
+  const sortedData = [...data].sort((a, b) => {
+    const va = parseFloat(a[_perfSortKey]) || 0;
+    const vb = parseFloat(b[_perfSortKey]) || 0;
+    return _perfSortDir === 'asc' ? va - vb : vb - va;
+  });
+
+  const maxNet = sortedData[0]?.total_net || 1;
+
+  const PERF_COLS = [
+    { key: 'rank',         label: '#',             sortable: false },
+    { key: 'host_name',    label: 'Host',           sortable: false },
+    { key: 'total_sessions',label: 'Sesi',         sortable: true  },
+    { key: 'total_orders', label: 'Orders',         sortable: true  },
+    { key: 'avg_orders',   label: 'Avg Orders',     sortable: true  },
+    { key: 'total_net',    label: 'Net Sales',       sortable: true  },
+    { key: 'avg_net',      label: 'Avg Net Sales',   sortable: true  },
+    { key: 'total_gross',  label: 'Gross Sales',     sortable: true  },
+    { key: 'total_views',  label: 'Views',           sortable: true  },
+    { key: 'avg_views',    label: 'Avg Views',       sortable: true  },
+    { key: 'total_buyers', label: 'Buyers',          sortable: true  },
+    { key: 'avg_cr',       label: 'CR%',             sortable: true  },
+    { key: 'total_followers',label:'Followers',      sortable: true  },
+    { key: 'avg_duration', label: 'Avg Durasi',      sortable: true  },
+    { key: 'total_likes',  label: 'Likes',           sortable: true  },
+  ];
+
+  const thead = PERF_COLS.map(c => {
+    if (!c.sortable) return `<th class="${c.key === 'rank' ? '' : ''}">${c.label}</th>`;
+    const active = _perfSortKey === c.key;
+    const arrow  = active ? (_perfSortDir === 'asc' ? ' ▲' : ' ▼') : '';
+    return `<th class="sortable${active ? ' sorted' : ''} num" data-pcol="${c.key}">${c.label}<span class="sort-arrow">${arrow || ' ↕'}</span></th>`;
+  }).join('');
+
+  // Re-rank setelah sort
+  const tbody = sortedData.map((h, i) => {
+    const isTopByNet = h.total_net === data[0]?.total_net;
+    const rankByNet  = data.findIndex(d => d.host_id === h.host_id);
+    const medal      = medals[rankByNet] || '';
+    const pct        = maxNet > 0 ? Math.round((h.total_net / maxNet) * 100) : 0;
+
+    return `<tr>
+      <td style="text-align:center;font-size:18px;width:44px">${medal || (rankByNet+1)}</td>
+      <td style="min-width:140px">
+        <div style="font-weight:600">${escHtml(h.host_name)}</div>
+        ${h.host_phone ? `<div style="font-size:11px;color:var(--text-muted)">${escHtml(h.host_phone)}</div>` : ''}
+        <div class="perf-bar"><div class="perf-bar-fill" style="width:${pct}%"></div></div>
+      </td>
+      <td class="num">${h.total_sessions}</td>
+      <td class="num">${fmtNum(h.total_orders)}</td>
+      <td class="num">${h.avg_orders}</td>
+      <td class="num"><strong>${fmtIDR(h.total_net)}</strong></td>
+      <td class="num">${fmtIDR(h.avg_net)}</td>
+      <td class="num">${fmtIDR(h.total_gross)}</td>
+      <td class="num">${fmtNum(h.total_views)}</td>
+      <td class="num">${fmtNum(h.avg_views)}</td>
+      <td class="num">${fmtNum(h.total_buyers)}</td>
+      <td class="num">${h.avg_cr}%</td>
+      <td class="num">${fmtNum(h.total_followers)}</td>
+      <td class="num">${h.avg_duration} mnt</td>
+      <td class="num">${fmtNum(h.total_likes)}</td>
+    </tr>`;
+  }).join('');
 
   return `
-    <table>
-      <thead><tr>
-        <th style="width:44px;text-align:center">#</th>
-        <th>Host</th>
-        <th class="num">Sesi</th>
-        <th class="num">Orders</th>
-        <th class="num">Avg Orders</th>
-        <th class="num">Gross Sales</th>
-        <th class="num">Avg Gross</th>
-        <th class="num">Views</th>
-        <th class="num">Avg Views</th>
-        <th class="num">Buyers</th>
-        <th class="num">CR%</th>
-        <th class="num">Followers</th>
-        <th class="num">Avg Durasi</th>
-        <th class="num">Likes</th>
-        <th class="num" style="min-width:80px">Score</th>
-      </tr></thead>
-      <tbody>
-        ${data.map((h, i) => {
-          const pct = Math.round((h.score / maxScore) * 100);
-          return `
-            <tr>
-              <td style="text-align:center;font-size:18px">${medals[i] || (i+1)}</td>
-              <td style="min-width:140px">
-                <div style="font-weight:600">${escHtml(h.host_name)}</div>
-                ${h.host_phone ? `<div style="font-size:11px;color:var(--text-muted)">${escHtml(h.host_phone)}</div>` : ''}
-                <div class="perf-bar"><div class="perf-bar-fill" style="width:${pct}%"></div></div>
-              </td>
-              <td class="num">${h.total_sessions}</td>
-              <td class="num">${fmtNum(h.total_orders)}</td>
-              <td class="num">${h.avg_orders}</td>
-              <td class="num">${fmtIDR(h.total_gross)}</td>
-              <td class="num">${fmtIDR(h.avg_gross)}</td>
-              <td class="num">${fmtNum(h.total_views)}</td>
-              <td class="num">${fmtNum(h.avg_views)}</td>
-              <td class="num">${fmtNum(h.total_buyers)}</td>
-              <td class="num">${h.avg_cr}%</td>
-              <td class="num">${fmtNum(h.total_followers)}</td>
-              <td class="num">${h.avg_duration} mnt</td>
-              <td class="num">${fmtNum(h.total_likes)}</td>
-              <td class="num"><strong style="color:var(--accent-light);font-size:15px">${h.score}</strong></td>
-            </tr>`;
-        }).join('')}
-      </tbody>
+    <table id="perfTable">
+      <thead><tr>${thead}</tr></thead>
+      <tbody>${tbody}</tbody>
     </table>`;
 }
 
@@ -825,6 +849,7 @@ async function loadPerformance() {
   const wrap = document.getElementById('perfTableWrap');
   const info = document.getElementById('perfInfo');
   if (!wrap) return;
+  wrap.innerHTML = `<div class="shopee-loading"><div class="spinner"></div><p>Menghitung performa...</p></div>`;
 
   try {
     const { since, until } = _dateRange === 'custom'
@@ -834,12 +859,29 @@ async function loadPerformance() {
     if (since) q.set('since', since);
     if (until) q.set('until', until);
 
-    const data = await apiGet(`/host-performance?${q}`);
-    wrap.innerHTML = renderPerformanceTable(data);
-    if (info) info.textContent = `${data.length} host`;
+    _perfData      = await apiGet(`/host-performance?${q}`);
+    wrap.innerHTML = renderPerformanceTable(_perfData);
+    if (info) info.textContent = `${_perfData.length} host`;
+
+    // Wire sort after render
+    wirePerfSort(wrap);
   } catch (err) {
     wrap.innerHTML = `<div class="shopee-error">⚠️ ${escHtml(err.message)}</div>`;
   }
+}
+
+function wirePerfSort(wrap) {
+  wrap.querySelectorAll('th.sortable[data-pcol]').forEach(th => {
+    th.style.cursor = 'pointer';
+    th.addEventListener('click', () => {
+      const key = th.dataset.pcol;
+      _perfSortDir = _perfSortKey === key ? (_perfSortDir === 'asc' ? 'desc' : 'asc') : 'desc';
+      _perfSortKey = key;
+      const perfWrap = document.getElementById('perfTableWrap');
+      if (perfWrap) perfWrap.innerHTML = renderPerformanceTable(_perfData);
+      wirePerfSort(perfWrap);
+    });
+  });
 }
 
 function wirePerformanceEvents() {
