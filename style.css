@@ -3024,3 +3024,19 @@ tfoot .col-sticky {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
+
+/* ── Performance bar ── */
+.perf-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 5px;
+  width: 100%;
+  max-width: 120px;
+}
+.perf-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ee4d2d, #f5734a);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}

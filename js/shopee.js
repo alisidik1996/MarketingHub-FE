@@ -207,6 +207,9 @@ export function renderShopeePage() {
         <button class="shopee-tab ${_activeTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
           📊 Dashboard
         </button>
+        <button class="shopee-tab ${_activeTab === 'performance' ? 'active' : ''}" data-tab="performance">
+          🏆 Performa Host
+        </button>
         <button class="shopee-tab ${_activeTab === 'hosts' ? 'active' : ''}" data-tab="hosts">
           👤 Host
         </button>
@@ -214,7 +217,9 @@ export function renderShopeePage() {
 
       <!-- Tab content -->
       <div id="shopeeTabContent">
-        ${_activeTab === 'dashboard' ? renderDashboardTab() : renderHostsTab()}
+        ${_activeTab === 'dashboard'   ? renderDashboardTab()   :
+          _activeTab === 'performance' ? renderPerformanceTab() :
+          renderHostsTab()}
       </div>
 
     </div>`;
@@ -339,9 +344,7 @@ function renderHostsTable(hosts) {
 
 function renderTableLoading() {
   return `<div class="shopee-loading"><div class="spinner"></div><p>Memuat data...</p></div>`;
-}
-
-function renderTableSection() {
+}function renderTableSection() {
   const tableEl  = document.getElementById('shopeeTableWrap');
   const infoEl   = document.getElementById('shopeeTableInfo');
   const updEl    = document.getElementById('shopeeLastUpdated');
@@ -468,6 +471,10 @@ export function initShopeeEvents() {
       content.innerHTML = renderDashboardTab();
       wireDashboardEvents();
       refreshSessions();
+    } else if (_activeTab === 'performance') {
+      content.innerHTML = renderPerformanceTab();
+      wirePerformanceEvents();
+      loadPerformance();
     } else if (_activeTab === 'hosts') {
       content.innerHTML = renderHostsTab();
       wireHostEvents();
@@ -490,7 +497,8 @@ export function initShopeeEvents() {
     _customSince = since;
     _customUntil = until;
     _page        = 1;
-    if (_activeTab === 'dashboard') refreshAll();
+    if (_activeTab === 'dashboard')   refreshAll();
+    if (_activeTab === 'performance') loadPerformance();
   });
 }
 
@@ -731,4 +739,109 @@ function showUploadStatus(type, msg) {
   el.className     = `upload-status upload-${type}`;
   el.innerHTML     = msg;
   if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// ── Performance Tab ───────────────────────────────────
+
+function renderPerformanceTab() {
+  return `
+    <div class="card table-card" style="display:flex">
+      <div class="card-header">
+        <h3>🏆 Performa Host</h3>
+        <div class="table-controls">
+          <button class="btn-sm btn-outline" id="btnRefreshPerf">🔄 Refresh</button>
+        </div>
+      </div>
+      <div class="table-wrapper" id="perfTableWrap">
+        <div class="shopee-loading"><div class="spinner"></div><p>Menghitung performa...</p></div>
+      </div>
+      <div class="table-footer">
+        <span id="perfInfo">—</span>
+        <span style="font-size:11px;color:var(--text-muted)">Score = Orders×40 + Gross×0.001×30 + Views×0.01×20 + Followers×10</span>
+      </div>
+    </div>`;
+}
+
+function renderPerformanceTable(data) {
+  if (!data.length) return `
+    <div class="empty-state">
+      <div class="empty-icon">🏆</div>
+      <p>Belum ada data. Assign host ke session livestream terlebih dahulu.</p>
+    </div>`;
+
+  const maxScore = data[0]?.score || 1;
+  const medals   = ['🥇','🥈','🥉'];
+
+  return `
+    <table>
+      <thead><tr>
+        <th style="width:44px;text-align:center">#</th>
+        <th>Host</th>
+        <th class="num">Sesi</th>
+        <th class="num">Orders</th>
+        <th class="num">Avg Orders</th>
+        <th class="num">Gross Sales</th>
+        <th class="num">Avg Gross</th>
+        <th class="num">Views</th>
+        <th class="num">Avg Views</th>
+        <th class="num">Buyers</th>
+        <th class="num">CR%</th>
+        <th class="num">Followers</th>
+        <th class="num">Avg Durasi</th>
+        <th class="num">Likes</th>
+        <th class="num" style="min-width:80px">Score</th>
+      </tr></thead>
+      <tbody>
+        ${data.map((h, i) => {
+          const pct = Math.round((h.score / maxScore) * 100);
+          return `
+            <tr>
+              <td style="text-align:center;font-size:18px">${medals[i] || (i+1)}</td>
+              <td style="min-width:140px">
+                <div style="font-weight:600">${escHtml(h.host_name)}</div>
+                ${h.host_phone ? `<div style="font-size:11px;color:var(--text-muted)">${escHtml(h.host_phone)}</div>` : ''}
+                <div class="perf-bar"><div class="perf-bar-fill" style="width:${pct}%"></div></div>
+              </td>
+              <td class="num">${h.total_sessions}</td>
+              <td class="num">${fmtNum(h.total_orders)}</td>
+              <td class="num">${h.avg_orders}</td>
+              <td class="num">${fmtIDR(h.total_gross)}</td>
+              <td class="num">${fmtIDR(h.avg_gross)}</td>
+              <td class="num">${fmtNum(h.total_views)}</td>
+              <td class="num">${fmtNum(h.avg_views)}</td>
+              <td class="num">${fmtNum(h.total_buyers)}</td>
+              <td class="num">${h.avg_cr}%</td>
+              <td class="num">${fmtNum(h.total_followers)}</td>
+              <td class="num">${h.avg_duration} mnt</td>
+              <td class="num">${fmtNum(h.total_likes)}</td>
+              <td class="num"><strong style="color:var(--accent-light);font-size:15px">${h.score}</strong></td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function loadPerformance() {
+  const wrap = document.getElementById('perfTableWrap');
+  const info = document.getElementById('perfInfo');
+  if (!wrap) return;
+
+  try {
+    const { since, until } = _dateRange === 'custom'
+      ? { since: _customSince, until: _customUntil }
+      : getDateRange(_dateRange);
+    const q = new URLSearchParams();
+    if (since) q.set('since', since);
+    if (until) q.set('until', until);
+
+    const data = await apiGet(`/host-performance?${q}`);
+    wrap.innerHTML = renderPerformanceTable(data);
+    if (info) info.textContent = `${data.length} host`;
+  } catch (err) {
+    wrap.innerHTML = `<div class="shopee-error">⚠️ ${escHtml(err.message)}</div>`;
+  }
+}
+
+function wirePerformanceEvents() {
+  document.getElementById('btnRefreshPerf')?.addEventListener('click', loadPerformance);
 }
