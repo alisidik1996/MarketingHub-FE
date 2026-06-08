@@ -3385,3 +3385,22 @@ tbody tr:last-child td {
   .bot-card-header { flex-wrap: wrap; }
   .bot-code { font-size: 11px; }
 }
+
+/* ── Bot info box ── */
+.bot-info-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.bot-info-box code {
+  color: var(--accent-light);
+  font-family: 'Consolas', monospace;
+  word-break: break-all;
+}

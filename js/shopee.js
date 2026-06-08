@@ -291,9 +291,16 @@ function renderHostsTab(hosts = null) {
               <input type="text" id="hostPhone" placeholder="08xxxxxxxxxx" />
             </div>
           </div>
-          <div class="form-group">
-            <label>Catatan</label>
-            <input type="text" id="hostNotes" placeholder="Catatan opsional..." />
+          <div class="form-row">
+            <div class="form-group">
+              <label>Username Telegram</label>
+              <input type="text" id="hostTelegram" placeholder="@username (tanpa @)" />
+              <small>Untuk auto-match saat bot menerima URL dari host ini</small>
+            </div>
+            <div class="form-group">
+              <label>Catatan</label>
+              <input type="text" id="hostNotes" placeholder="Catatan opsional..." />
+            </div>
           </div>
           <div class="form-actions">
             <button class="btn-secondary" id="btnCancelHost">Batal</button>
@@ -323,6 +330,7 @@ function renderHostsTable(hosts) {
       <thead><tr>
         <th>Nama</th>
         <th>No. HP</th>
+        <th>Telegram</th>
         <th>Catatan</th>
         <th>Dibuat</th>
         <th style="width:100px"></th>
@@ -332,11 +340,12 @@ function renderHostsTable(hosts) {
           <tr>
             <td><strong>${escHtml(h.name)}</strong></td>
             <td>${h.phone ? escHtml(h.phone) : '<span style="color:var(--text-muted)">—</span>'}</td>
+            <td style="font-size:12px">${h.telegram_username ? `<span style="color:var(--accent-light)">@${escHtml(h.telegram_username)}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
             <td style="color:var(--text-muted);font-size:12px">${h.notes ? escHtml(h.notes) : '—'}</td>
             <td style="font-size:11px;color:var(--text-muted)">${fmtDate(h.created_at)}</td>
             <td>
               <div style="display:flex;gap:6px;justify-content:flex-end">
-                <button class="btn-sm btn-outline btn-edit-host" data-id="${h.id}" data-name="${escHtml(h.name)}" data-phone="${escHtml(h.phone||'')}" data-notes="${escHtml(h.notes||'')}">✏️</button>
+                <button class="btn-sm btn-outline btn-edit-host" data-id="${h.id}" data-name="${escHtml(h.name)}" data-phone="${escHtml(h.phone||'')}" data-notes="${escHtml(h.notes||'')}" data-telegram="${escHtml(h.telegram_username||'')}">✏️</button>
                 <button class="btn-sm btn-danger btn-del-host" data-id="${h.id}" data-name="${escHtml(h.name)}">🗑</button>
               </div>
             </td>
@@ -661,10 +670,11 @@ function wireHostEvents() {
 
   // Save host
   $('btnSaveHost')?.addEventListener('click', async () => {
-    const id    = $('hostEditId').value;
-    const name  = $('hostName').value.trim();
-    const phone = $('hostPhone').value.trim();
-    const notes = $('hostNotes').value.trim();
+    const id       = $('hostEditId').value;
+    const name     = $('hostName').value.trim();
+    const phone    = $('hostPhone').value.trim();
+    const notes    = $('hostNotes').value.trim();
+    const telegram = $('hostTelegram')?.value.trim().replace('@','');
 
     if (!name) { alert('Nama host wajib diisi'); $('hostName').focus(); return; }
 
@@ -673,7 +683,7 @@ function wireHostEvents() {
     btn.textContent = '⏳ Menyimpan...';
 
     try {
-      await saveHost({ name, phone, notes }, id ? parseInt(id, 10) : null);
+      await saveHost({ name, phone, notes, telegram_username: telegram }, id ? parseInt(id, 10) : null);
       $('hostFormWrap').style.display = 'none';
       await loadHosts();
     } catch (err) {
@@ -696,10 +706,11 @@ function wireHostEvents() {
 
     if (editBtn) {
       const $ = id => document.getElementById(id);
-      $('hostEditId').value  = editBtn.dataset.id;
-      $('hostName').value    = editBtn.dataset.name;
-      $('hostPhone').value   = editBtn.dataset.phone;
-      $('hostNotes').value   = editBtn.dataset.notes;
+      $('hostEditId').value     = editBtn.dataset.id;
+      $('hostName').value       = editBtn.dataset.name;
+      $('hostPhone').value      = editBtn.dataset.phone;
+      $('hostNotes').value      = editBtn.dataset.notes;
+      if ($('hostTelegram')) $('hostTelegram').value = editBtn.dataset.telegram || '';
       $('hostFormWrap').style.display = 'block';
       $('hostName').focus();
     }
