@@ -9,6 +9,7 @@ import { renderAgentsPage, initAgentEvents } from './agents.js';
 import { renderShopeePage, initShopeeEvents } from './shopee.js';
 import { renderDateRangePicker, initDateRangePicker } from './dateRangePicker.js';
 import { state as metaState } from './state.js';
+import { renderBotPage, initBotEvents } from './bot.js';
 
 // ── Page navigation ───────────────────────────────────
 
@@ -55,6 +56,14 @@ function showPage(page) {
     topbarRight.style.display = 'none';
     topbarRight.innerHTML = '';
     initAgentEvents();
+  } else if (page === 'bot-setting') {
+    const pageEl = document.getElementById('page-bot-setting');
+    pageEl.innerHTML = renderBotPage();
+    pageEl.classList.add('active');
+    document.querySelector('.topbar-left h1').textContent = 'Bot Setting';
+    topbarRight.style.display = 'none';
+    topbarRight.innerHTML = '';
+    initBotEvents();
   } else if (page === 'shopee-live') {
     const pageEl = document.getElementById('page-shopee-live');
     pageEl.innerHTML = renderShopeePage();

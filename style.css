@@ -3139,3 +3139,249 @@ tbody tr:hover {
 tbody tr:last-child td {
   border-bottom: none;
 }
+
+/* =====================================================
+   BOT SETTING PAGE
+   ===================================================== */
+
+.bot-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+.bot-page-header { flex-shrink: 0; }
+
+.bot-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.bot-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Bot card ── */
+.bot-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bot-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bot-icon {
+  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.telegram-icon { background: rgba(38,162,215,0.15); }
+.wa-icon        { background: rgba(37,211,102,0.15); }
+
+.bot-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bot-card-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.bot-card-header > div:nth-child(2) { flex: 1; }
+
+/* ── Toggle switch ── */
+.bot-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.bot-toggle input { opacity: 0; width: 0; height: 0; }
+
+.bot-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.bot-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  top: 2px;
+  left: 2px;
+  transition: transform var(--transition), background var(--transition);
+}
+
+.bot-toggle input:checked + .bot-toggle-slider {
+  background: rgba(79,70,229,0.2);
+  border-color: var(--accent);
+}
+
+.bot-toggle input:checked + .bot-toggle-slider::before {
+  background: var(--accent);
+  transform: translateX(20px);
+}
+
+/* ── Card body ── */
+.bot-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Steps ── */
+.bot-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bot-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  color: var(--accent-light);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.bot-link {
+  color: var(--accent-light);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.bot-link:hover { color: var(--text); }
+
+/* ── Actions ── */
+.bot-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Status ── */
+.bot-status {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.bot-status-success { background: rgba(16,185,129,0.1); color: var(--green);       border: 1px solid rgba(16,185,129,0.3); }
+.bot-status-error   { background: rgba(239,68,68,0.1);  color: var(--red);         border: 1px solid rgba(239,68,68,0.3);  }
+.bot-status-warning { background: rgba(245,158,11,0.1); color: var(--yellow);      border: 1px solid rgba(245,158,11,0.3); }
+.bot-status-loading { background: rgba(79,70,229,0.08); color: var(--accent-light);border: 1px solid rgba(79,70,229,0.2);  }
+
+/* ── Alert ── */
+.bot-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bot-alert.warning {
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.3);
+  color: var(--yellow);
+}
+
+/* ── Code block ── */
+.bot-code-section {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+
+.bot-code-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.bot-code {
+  background: rgba(0,0,0,0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  font-family: 'Consolas', monospace;
+  max-height: 280px;
+  margin-bottom: 10px;
+}
+
+/* ── Notifications ── */
+.bot-notif-section {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.bot-notif-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.bot-notif-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  .bot-card-header { flex-wrap: wrap; }
+  .bot-code { font-size: 11px; }
+}
