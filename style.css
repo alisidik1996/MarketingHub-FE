@@ -3054,3 +3054,88 @@ tfoot .col-sticky {
   flex: 1;
   min-height: 0;
 }
+
+/* =====================================================
+   TABLE POLISH — border tipis, alignment rapi
+   ===================================================== */
+
+/* Border outline pada seluruh tabel */
+table {
+  border: 1px solid var(--border);
+  border-radius: 0;
+}
+
+/* Border antar kolom (vertical separator) */
+thead th,
+tbody td,
+tfoot td {
+  border-right: 1px solid var(--border);
+}
+
+thead th:last-child,
+tbody td:last-child,
+tfoot td:last-child {
+  border-right: none;
+}
+
+/* Header alignment */
+thead th {
+  vertical-align: middle;
+  padding: 11px 12px;
+}
+
+/* Body cell */
+tbody td {
+  vertical-align: middle;
+  padding: 11px 12px;
+}
+
+/* Footer cell */
+tfoot td {
+  vertical-align: middle;
+  padding: 11px 12px;
+}
+
+/* Numeric alignment — right */
+td.num, th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Text cells — left */
+td:not(.num), th:not(.num):not(.sortable) {
+  text-align: left;
+}
+
+/* Sortable header — keep left with space for arrow */
+thead th.sortable {
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Consistent row divider */
+tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Hover — subtle highlight */
+tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Col-sticky left border shadow */
+.col-sticky {
+  border-right: 1px solid var(--border) !important;
+  box-shadow: 2px 0 6px rgba(0,0,0,0.25);
+}
+
+/* Table wrapper — ensure table fills width and no overflow-x */
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* Remove double border at table bottom */
+tbody tr:last-child td {
+  border-bottom: none;
+}
