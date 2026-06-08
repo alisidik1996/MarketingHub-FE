@@ -3040,3 +3040,17 @@ tfoot .col-sticky {
   border-radius: 2px;
   transition: width 0.4s ease;
 }
+
+/* ── Shopee tab content fills remaining height ── */
+#shopeeTabContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#shopeeTabContent > .card.table-card {
+  flex: 1;
+  min-height: 0;
+}
