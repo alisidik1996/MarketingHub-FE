@@ -20,12 +20,13 @@ function showPage(page) {
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 
-  // Reset topbar-right ke state default (Meta Ads) sebelum override
+  const topbarLeft  = document.querySelector('.topbar-left h1');
   const topbarRight = document.querySelector('.topbar-right');
+  if (!topbarLeft || !topbarRight) return;
 
   if (page === 'meta-ads') {
-    document.getElementById('page-meta-ads').classList.add('active');
-    document.querySelector('.topbar-left h1').textContent = 'Meta Ads Monitor';
+    document.getElementById('page-meta-ads')?.classList.add('active');
+    topbarLeft.textContent = 'Meta Ads Monitor';
     topbarRight.style.display = '';
     topbarRight.innerHTML = `
       ${renderDateRangePicker('meta', metaState.dateRange || 'last_7d')}
@@ -39,38 +40,42 @@ function showPage(page) {
         <button class="btn-extend-token" id="btnExtendToken">🔄 Perpanjang</button>
       </div>
     `;
-    // Init date picker — trigger loadDashboard on change
     initDateRangePicker('meta', (since, until, range) => {
-      metaState.dateRange = range === 'custom' ? `${since}:${until}` : range;
-      // store custom dates for controller to pick up
+      metaState.dateRange    = range;
       metaState._customSince = since;
       metaState._customUntil = until;
       loadDashboard();
     });
     initEvents();
+
   } else if (page === 'ai-agents') {
     const pageEl = document.getElementById('page-ai-agents');
+    if (!pageEl) return;
     pageEl.innerHTML = renderAgentsPage();
     pageEl.classList.add('active');
-    document.querySelector('.topbar-left h1').textContent = 'AI Agents';
+    topbarLeft.textContent    = 'AI Agents';
     topbarRight.style.display = 'none';
-    topbarRight.innerHTML = '';
+    topbarRight.innerHTML     = '';
     initAgentEvents();
+
   } else if (page === 'bot-setting') {
     const pageEl = document.getElementById('page-bot-setting');
+    if (!pageEl) return;
     pageEl.innerHTML = renderBotPage();
     pageEl.classList.add('active');
-    document.querySelector('.topbar-left h1').textContent = 'Bot Setting';
+    topbarLeft.textContent    = 'Bot Setting';
     topbarRight.style.display = 'none';
-    topbarRight.innerHTML = '';
+    topbarRight.innerHTML     = '';
     initBotEvents();
+
   } else if (page === 'shopee-live') {
     const pageEl = document.getElementById('page-shopee-live');
+    if (!pageEl) return;
     pageEl.innerHTML = renderShopeePage();
     pageEl.classList.add('active');
-    document.querySelector('.topbar-left h1').textContent = 'Shopee Livestream';
+    topbarLeft.textContent    = 'Shopee Livestream';
     topbarRight.style.display = '';
-    topbarRight.innerHTML = renderDateRangePicker('shopee', 'last_30d', true);
+    topbarRight.innerHTML     = renderDateRangePicker('shopee', 'last_30d', true);
     initShopeeEvents();
   }
 }
