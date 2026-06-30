@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Marketing Activity Monitor</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- Sidebar overlay (mobile) -->
@@ -25,7 +27,7 @@
         <li class="nav-item active" data-page="meta-ads">
           <span class="nav-label">Meta Ads</span>
         </li>
-        
+
         <li class="nav-item disabled">
           <span class="nav-label">Shopee Ads</span>
           <span class="badge-soon">Soon</span>
@@ -40,12 +42,6 @@
         <li class="nav-item disabled">
           <span class="nav-label">Tiktok Livestream</span>
           <span class="badge-soon">Soon</span>
-        </li>
-        <li class="nav-item" data-page="bot-setting">
-          <span class="nav-label">Bot Setting</span>
-        </li>
-        <li class="nav-item" data-page="ai-agents">
-          <span class="nav-label">AI Agents</span>
         </li>
       </ul>
     </nav>
@@ -74,7 +70,7 @@
           <span class="account-avatar">📘</span>
           <div>
             <div class="account-name" id="accountName">—</div>
-            <div class="account-id"   id="accountIdDisplay">—</div>
+            <div class="account-id" id="accountIdDisplay">—</div>
           </div>
         </div>
         <div class="account-spend-info" id="accountSpendInfo"></div>
@@ -104,9 +100,13 @@
         </div>
         <div class="table-wrapper">
           <table id="campaignTable">
-            <thead><tr></tr></thead>
+            <thead>
+              <tr></tr>
+            </thead>
             <tbody id="campaignTableBody"></tbody>
-            <tfoot><tr></tr></tfoot>
+            <tfoot>
+              <tr></tr>
+            </tfoot>
           </table>
         </div>
         <div class="table-footer">
@@ -146,12 +146,6 @@
 
     </section>
 
-    <!-- AI Agents Page -->
-    <section class="page" id="page-ai-agents"></section>
-
-    <!-- Bot Setting Page -->
-    <section class="page" id="page-bot-setting"></section>
-
     <!-- Shopee Livestream Page -->
     <section class="page" id="page-shopee-live"></section>
 
@@ -159,4 +153,5 @@
 
   <script type="module" src="js/main.js"></script>
 </body>
+
 </html>
