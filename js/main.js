@@ -133,8 +133,10 @@ function showPage(page) {
         }
 
         const balance =
+          json?.balance ||
           json?.data?.balance ||
           json?.data?.data?.balance ||
+          json?.total_balance ||
           0;
 
         if (balanceEl) {
