@@ -70,6 +70,8 @@ export function initIntegrationEvents() {
   const authBtn = document.getElementById('btnShopeeDirectAuth');
   const testBtn = document.getElementById('btnTestShopeeLogin');
 
+  syncSavedIntegrationToBackend();
+
   authBtn?.addEventListener('click', async () => {
     try {
       setStatus('loading', 'Mengarahkan ke Shopee OAuth...');
@@ -175,6 +177,26 @@ function setStatus(type, message) {
 
   el.className = `bot-status bot-status-${type}`;
   el.textContent = message;
+}
+
+async function syncSavedIntegrationToBackend() {
+  try {
+    const saved = getSavedIntegration();
+
+    if (!saved?.accessToken || !saved?.shopId) {
+      return;
+    }
+
+    await fetch(`${API_BASE}/shopee/integration/save`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(saved)
+    });
+  } catch (error) {
+    console.error('Gagal sinkron integrasi Shopee:', error);
+  }
 }
 
 function fakeRequest() {
