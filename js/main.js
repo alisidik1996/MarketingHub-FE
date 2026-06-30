@@ -5,11 +5,9 @@ import { TokenManager } from './tokenManager.js';
 import { loadDashboard, initEvents } from './controller.js';
 import { setToken, fetchFallbackToken } from './api.js';
 import { LS_TOKEN } from './config.js';
-import { renderAgentsPage, initAgentEvents } from './agents.js';
 import { renderShopeePage, initShopeeEvents } from './shopee.js';
 import { renderDateRangePicker, initDateRangePicker } from './dateRangePicker.js';
 import { state as metaState } from './state.js';
-import { renderBotPage, initBotEvents } from './bot.js';
 import { renderIntegrationPage, initIntegrationEvents } from './integration.js';
 
 // ── Page navigation ───────────────────────────────────
@@ -49,25 +47,73 @@ function showPage(page) {
     });
     initEvents();
 
-  } else if (page === 'ai-agents') {
-    const pageEl = document.getElementById('page-ai-agents');
+  } else if (page === 'shopee-ads') {
+    const pageEl = document.getElementById('page-shopee-ads');
     if (!pageEl) return;
-    pageEl.innerHTML = renderAgentsPage();
-    pageEl.classList.add('active');
-    topbarLeft.textContent = 'AI Agents';
-    topbarRight.style.display = 'none';
-    topbarRight.innerHTML = '';
-    initAgentEvents();
 
-  } else if (page === 'bot-setting') {
-    const pageEl = document.getElementById('page-bot-setting');
-    if (!pageEl) return;
-    pageEl.innerHTML = renderBotPage();
+    pageEl.innerHTML = `
+      <div class="bot-page">
+        <div class="bot-page-header">
+          <h2 class="bot-title">Shopee Ads Balance</h2>
+          <p class="bot-subtitle">
+            Monitoring saldo iklan Shopee Ads dari akun yang terhubung.
+          </p>
+        </div>
+
+        <div class="bot-card">
+          <div class="bot-card-body">
+            <div class="bot-actions">
+              <button class="btn-primary" id="btnLoadShopeeAdsBalance">
+                Refresh Balance
+              </button>
+            </div>
+
+            <div id="shopeeAdsBalanceResult" class="bot-info-box">
+              Klik refresh untuk mengambil saldo Shopee Ads.
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
     pageEl.classList.add('active');
-    topbarLeft.textContent = 'Bot Setting';
+    topbarLeft.textContent = 'Shopee Ads';
     topbarRight.style.display = 'none';
     topbarRight.innerHTML = '';
-    initBotEvents();
+
+    document
+      .getElementById('btnLoadShopeeAdsBalance')
+      ?.addEventListener('click', async () => {
+        const resultEl = document.getElementById('shopeeAdsBalanceResult');
+
+        if (!resultEl) return;
+
+        resultEl.innerHTML = 'Mengambil data saldo...';
+
+        try {
+          const res = await fetch(
+            'https://marketing-hub-be.vercel.app/api/shopee/ads/balance'
+          );
+
+          const json = await res.json();
+
+          if (!json.success) {
+            throw new Error(json.error || 'Gagal mengambil saldo');
+          }
+
+          resultEl.innerHTML = `
+            <div><strong>Status:</strong> Connected</div>
+            <div><strong>Response:</strong></div>
+            <pre class="bot-code">${JSON.stringify(json.data, null, 2)}</pre>
+          `;
+        } catch (err) {
+          resultEl.innerHTML = `
+            <div class="bot-status bot-status-error">
+              ${err.message || 'Terjadi kesalahan'}
+            </div>
+          `;
+        }
+      });
 
   } else if (page === 'shopee-live') {
     const pageEl = document.getElementById('page-shopee-live');
