@@ -51,25 +51,49 @@ function showPage(page) {
     const pageEl = document.getElementById('page-shopee-ads');
     if (!pageEl) return;
 
+    const shopeeAuth = JSON.parse(
+      localStorage.getItem('shopee_integration_auth') || '{}'
+    );
+
     pageEl.innerHTML = `
       <div class="bot-page">
-        <div class="bot-page-header">
-          <h2 class="bot-title">Shopee Ads Balance</h2>
-          <p class="bot-subtitle">
-            Monitoring saldo iklan Shopee Ads dari akun yang terhubung.
-          </p>
+
+        <div class="account-bar" style="display:flex">
+          <div class="account-info">
+            <span class="account-avatar">🛍️</span>
+
+            <div>
+              <div class="account-name">
+                Shopee Ads Account
+              </div>
+
+              <div class="account-id">
+                ${shopeeAuth.shopId || 'Belum terhubung'} · IDR
+              </div>
+            </div>
+          </div>
+
+          <div class="account-spend-info">
+            <div class="spend-stat">
+              <span class="spend-label">Saldo</span>
+              <span class="spend-val" id="shopeeAdsBalanceAmount">
+                Rp 0
+              </span>
+            </div>
+          </div>
+
+          <div class="account-actions">
+            <span class="status-dot ${shopeeAuth.accessToken ? 'active' : ''}"></span>
+            <span class="status-text">
+              ${shopeeAuth.accessToken ? 'Terhubung' : 'Disconnected'}
+            </span>
+          </div>
         </div>
 
         <div class="bot-card">
           <div class="bot-card-body">
-            <div class="bot-actions">
-              <button class="btn-primary" id="btnLoadShopeeAdsBalance">
-                Refresh Balance
-              </button>
-            </div>
-
             <div id="shopeeAdsBalanceResult" class="bot-info-box">
-              Klik refresh untuk mengambil saldo Shopee Ads.
+              Mengambil saldo Shopee Ads...
             </div>
           </div>
         </div>
@@ -81,39 +105,45 @@ function showPage(page) {
     topbarRight.style.display = 'none';
     topbarRight.innerHTML = '';
 
-    document
-      .getElementById('btnLoadShopeeAdsBalance')
-      ?.addEventListener('click', async () => {
-        const resultEl = document.getElementById('shopeeAdsBalanceResult');
+    (async () => {
+      const resultEl = document.getElementById('shopeeAdsBalanceResult');
+      const balanceEl = document.getElementById('shopeeAdsBalanceAmount');
 
-        if (!resultEl) return;
+      if (!resultEl) return;
 
-        resultEl.innerHTML = 'Mengambil data saldo...';
+      try {
+        const res = await fetch(
+          'https://marketing-hub-be.vercel.app/api/shopee/ads/balance'
+        );
 
-        try {
-          const res = await fetch(
-            'https://marketing-hub-be.vercel.app/api/shopee/ads/balance'
-          );
+        const json = await res.json();
 
-          const json = await res.json();
-
-          if (!json.success) {
-            throw new Error(json.error || 'Gagal mengambil saldo');
-          }
-
-          resultEl.innerHTML = `
-            <div><strong>Status:</strong> Connected</div>
-            <div><strong>Response:</strong></div>
-            <pre class="bot-code">${JSON.stringify(json.data, null, 2)}</pre>
-          `;
-        } catch (err) {
-          resultEl.innerHTML = `
-            <div class="bot-status bot-status-error">
-              ${err.message || 'Terjadi kesalahan'}
-            </div>
-          `;
+        if (!json.success) {
+          throw new Error(json.error || 'Gagal mengambil saldo');
         }
-      });
+
+        const balance =
+          json?.data?.balance ||
+          json?.data?.data?.balance ||
+          0;
+
+        if (balanceEl) {
+          balanceEl.innerHTML =
+            'Rp ' + Number(balance).toLocaleString('id-ID');
+        }
+
+        resultEl.innerHTML = `
+          <div><strong>Status:</strong> Connected</div>
+          <div><strong>Saldo:</strong> Rp ${Number(balance).toLocaleString('id-ID')}</div>
+        `;
+      } catch (err) {
+        resultEl.innerHTML = `
+          <div class="bot-status bot-status-error">
+            ${err.message || 'Terjadi kesalahan'}
+          </div>
+        `;
+      }
+    })();
 
   } else if (page === 'shopee-live') {
     const pageEl = document.getElementById('page-shopee-live');
