@@ -51,9 +51,19 @@ function showPage(page) {
     const pageEl = document.getElementById('page-shopee-ads');
     if (!pageEl) return;
 
-    const shopeeAuth = JSON.parse(
-      localStorage.getItem('shopee_integration_auth') || '{}'
-    );
+    let shopeeAuth = {};
+
+    try {
+      shopeeAuth = JSON.parse(
+        localStorage.getItem('shopee_integration_auth') || '{}'
+      );
+    } catch {
+      shopeeAuth = {};
+    }
+
+    const isConnected =
+      !!shopeeAuth?.accessToken &&
+      !!shopeeAuth?.shopId;
 
     pageEl.innerHTML = `
       <div class="bot-page">
@@ -83,9 +93,9 @@ function showPage(page) {
           </div>
 
           <div class="account-actions">
-            <span class="status-dot ${shopeeAuth.accessToken ? 'active' : ''}"></span>
+            <span class="status-dot ${isConnected ? 'active' : ''}"></span>
             <span class="status-text">
-              ${shopeeAuth.accessToken ? 'Terhubung' : 'Disconnected'}
+              ${isConnected ? 'Terhubung' : 'Disconnected'}
             </span>
           </div>
         </div>
