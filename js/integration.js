@@ -13,18 +13,40 @@ export function renderIntegrationPage() {
         </p>
       </div>
 
-      <div class="bot-card">
-        <div class="bot-card-header">
-          <div class="bot-icon shopee-icon">🛍️</div>
+      <div class="account-bar" style="display:flex">
+        <div class="account-info">
+          <span class="account-avatar">🛍️</span>
 
           <div>
-            <div class="bot-card-title">Shopee API Integration</div>
-            <div class="bot-card-subtitle">
-              Login, access token, dan refresh token Shopee API
+            <div class="account-name">
+              Shopee Ads Account
+            </div>
+
+            <div class="account-id">
+              ${saved.shopId || 'Belum terhubung'} · Marketplace
             </div>
           </div>
         </div>
 
+        <div class="account-spend-info">
+          <div class="spend-stat">
+            <span class="spend-label">Integration</span>
+            <span class="spend-val">
+              ${saved.partnerId || '-'}
+            </span>
+          </div>
+        </div>
+
+        <div class="account-actions">
+          <span class="status-dot ${saved.accessToken ? 'active' : ''}"></span>
+
+          <span class="status-text">
+            ${saved.accessToken ? 'Terhubung' : 'Disconnected'}
+          </span>
+        </div>
+      </div>
+
+      <div class="bot-card">
         <div class="bot-card-body">
 
           <input type="hidden" id="shopeePartnerId" value="${saved.partnerId || ''}" />
