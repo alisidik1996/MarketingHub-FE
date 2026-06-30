@@ -87,11 +87,17 @@ export function initIntegrationEvents() {
       window.addEventListener('message', event => {
         if (event.data?.type !== 'SHOPEE_AUTH_SUCCESS') return;
 
+        document.getElementById('shopeePartnerId').value =
+          event.data.partnerId || '';
+
         document.getElementById('shopeeShopId').value =
           event.data.shopId || '';
 
         document.getElementById('shopeeAccessToken').value =
-          event.data.code || '';
+          event.data.accessToken || '';
+
+        document.getElementById('shopeeRefreshToken').value =
+          event.data.refreshToken || '';
 
         const payload = collectForm();
 
@@ -100,7 +106,18 @@ export function initIntegrationEvents() {
           JSON.stringify(payload)
         );
 
-        setStatus('success', 'Integrasi Shopee berhasil.');
+        await fetch(`${API_BASE}/shopee/integration/save`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        setStatus(
+          'success',
+          'Integrasi Shopee berhasil disimpan.'
+        );
       });
     } catch (error) {
       setStatus('error', error.message || 'OAuth Shopee gagal.');
