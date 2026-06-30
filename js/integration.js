@@ -84,7 +84,7 @@ export function initIntegrationEvents() {
         throw new Error('Popup diblokir browser.');
       }
 
-      window.addEventListener('message', event => {
+      window.addEventListener('message', async event => {
         if (event.data?.type !== 'SHOPEE_AUTH_SUCCESS') return;
 
         document.getElementById('shopeePartnerId').value =
