@@ -30,7 +30,14 @@ export function renderIntegrationPage() {
 
         <div class="account-spend-info">
           <div class="spend-stat">
-            <span class="spend-label">Integration</span>
+            <span class="spend-label">Saldo</span>
+            <span class="spend-val" id="shopeeBalanceDisplay">
+              Rp 0
+            </span>
+          </div>
+
+          <div class="spend-stat">
+            <span class="spend-label">Partner ID</span>
             <span class="spend-val">
               ${saved.partnerId || '-'}
             </span>
@@ -93,6 +100,7 @@ export function initIntegrationEvents() {
   const testBtn = document.getElementById('btnTestShopeeLogin');
 
   syncSavedIntegrationToBackend();
+  loadShopeeBalance();
 
   authBtn?.addEventListener('click', async () => {
     try {
@@ -218,6 +226,38 @@ async function syncSavedIntegrationToBackend() {
     });
   } catch (error) {
     console.error('Gagal sinkron integrasi Shopee:', error);
+  }
+}
+
+async function loadShopeeBalance() {
+  try {
+    const saved = getSavedIntegration();
+
+    if (!saved?.accessToken || !saved?.shopId) {
+      return;
+    }
+
+    const res = await fetch(
+      `${API_BASE}/shopee/ads/wallet`
+    );
+
+    const data = await res.json();
+
+    const balance =
+      data?.data?.balance ||
+      data?.balance ||
+      0;
+
+    const el = document.getElementById(
+      'shopeeBalanceDisplay'
+    );
+
+    if (el) {
+      el.innerHTML =
+        'Rp ' + Number(balance).toLocaleString('id-ID');
+    }
+  } catch (error) {
+    console.error('Gagal mengambil saldo Shopee:', error);
   }
 }
 
