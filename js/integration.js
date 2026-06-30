@@ -1,9 +1,10 @@
 const STORAGE_KEY = 'shopee_integration_auth';
+const API_BASE = 'https://marketing-hub-be.vercel.app/api';
 
 export function renderIntegrationPage() {
-    const saved = getSavedIntegration();
+  const saved = getSavedIntegration();
 
-    return `
+  return `
     <div class="bot-page">
       <div class="bot-page-header">
         <h2 class="bot-title">Marketplace Integration</h2>
@@ -26,37 +27,22 @@ export function renderIntegrationPage() {
 
         <div class="bot-card-body">
 
-          <div class="form-group">
-            <label>Partner ID</label>
-            <input type="text" id="shopeePartnerId" placeholder="Masukkan Partner ID" value="${saved.partnerId || ''}" />
-          </div>
+          <input type="hidden" id="shopeePartnerId" value="${saved.partnerId || ''}" />
+          <input type="hidden" id="shopeeShopId" value="${saved.shopId || ''}" />
+          <textarea id="shopeeAccessToken" hidden>${saved.accessToken || ''}</textarea>
+          <textarea id="shopeeRefreshToken" hidden>${saved.refreshToken || ''}</textarea>
 
-          <div class="form-group">
-            <label>Shop ID</label>
-            <input type="text" id="shopeeShopId" placeholder="Masukkan Shop ID" value="${saved.shopId || ''}" />
-          </div>
-
-          <div class="form-group">
-            <label>Access Token</label>
-            <textarea id="shopeeAccessToken" rows="4" placeholder="Masukkan access token">${saved.accessToken || ''}</textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Refresh Token</label>
-            <textarea id="shopeeRefreshToken" rows="4" placeholder="Masukkan refresh token">${saved.refreshToken || ''}</textarea>
+          <div class="bot-info-box">
+            Klik tombol <strong>Integrasi Shopee</strong> untuk login dan menghubungkan akun Shopee secara otomatis.
           </div>
 
           <div class="bot-actions">
-            <button class="btn-primary" id="btnSaveShopeeAuth">
-              💾 Simpan Auth
+            <button class="btn-primary" id="btnShopeeDirectAuth">
+              Integrasi Shopee
             </button>
 
             <button class="btn-secondary" id="btnTestShopeeLogin">
-              🔐 Test Login
-            </button>
-
-            <button class="btn-secondary" id="btnRefreshShopeeToken">
-              🔄 Refresh Token
+              Test Login
             </button>
           </div>
 
@@ -74,95 +60,101 @@ export function renderIntegrationPage() {
 }
 
 export function initIntegrationEvents() {
-    const saveBtn = document.getElementById('btnSaveShopeeAuth');
-    const testBtn = document.getElementById('btnTestShopeeLogin');
-    const refreshBtn = document.getElementById('btnRefreshShopeeToken');
+  const authBtn = document.getElementById('btnShopeeDirectAuth');
+  const testBtn = document.getElementById('btnTestShopeeLogin');
 
-    saveBtn?.addEventListener('click', () => {
+  authBtn?.addEventListener('click', async () => {
+    try {
+      setStatus('loading', 'Mengarahkan ke Shopee OAuth...');
+
+      const res = await fetch(`${API_BASE}/shopee/auth/url`);
+      const data = await res.json();
+
+      if (!data.success || !data.authUrl) {
+        throw new Error(data.error || 'Gagal membuat auth URL');
+      }
+
+      const popup = window.open(
+        data.authUrl,
+        'ShopeeAuth',
+        'width=720,height=820'
+      );
+
+      if (!popup) {
+        throw new Error('Popup diblokir browser.');
+      }
+
+      window.addEventListener('message', event => {
+        if (event.data?.type !== 'SHOPEE_AUTH_SUCCESS') return;
+
+        document.getElementById('shopeeShopId').value =
+          event.data.shopId || '';
+
+        document.getElementById('shopeeAccessToken').value =
+          event.data.code || '';
+
         const payload = collectForm();
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(payload)
+        );
 
-        setStatus('success', 'Auth Shopee berhasil disimpan.');
-    });
+        setStatus('success', 'Integrasi Shopee berhasil.');
+      });
+    } catch (error) {
+      setStatus('error', error.message || 'OAuth Shopee gagal.');
+    }
+  });
 
-    testBtn?.addEventListener('click', async () => {
-        const payload = collectForm();
+  testBtn?.addEventListener('click', async () => {
+    const payload = collectForm();
 
-        setStatus('loading', 'Mencoba login Shopee API...');
+    setStatus('loading', 'Mencoba login Shopee API...');
 
-        try {
-            await fakeRequest();
+    try {
+      await fakeRequest();
 
-            if (!payload.accessToken) {
-                throw new Error('Access token belum diisi.');
-            }
+      if (!payload.accessToken) {
+        throw new Error('Access token belum diisi.');
+      }
 
-            setStatus('success', 'Login Shopee API berhasil.');
-        } catch (error) {
-            setStatus('error', error.message || 'Login gagal.');
-        }
-    });
+      setStatus('success', 'Login Shopee API berhasil.');
+    } catch (error) {
+      setStatus('error', error.message || 'Login gagal.');
+    }
+  });
 
-    refreshBtn?.addEventListener('click', async () => {
-        const payload = collectForm();
-
-        setStatus('loading', 'Refreshing token Shopee...');
-
-        try {
-            await fakeRequest();
-
-            if (!payload.refreshToken) {
-                throw new Error('Refresh token belum diisi.');
-            }
-
-            const refreshedToken = `new_token_${Date.now()}`;
-
-            document.getElementById('shopeeAccessToken').value = refreshedToken;
-
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify({
-                    ...payload,
-                    accessToken: refreshedToken
-                })
-            );
-
-            setStatus('success', 'Refresh token berhasil dilakukan.');
-        } catch (error) {
-            setStatus('error', error.message || 'Refresh token gagal.');
-        }
-    });
 }
 
 function collectForm() {
-    return {
-        partnerId: document.getElementById('shopeePartnerId')?.value || '',
-        shopId: document.getElementById('shopeeShopId')?.value || '',
-        accessToken: document.getElementById('shopeeAccessToken')?.value || '',
-        refreshToken: document.getElementById('shopeeRefreshToken')?.value || ''
-    };
+  return {
+    partnerId: document.getElementById('shopeePartnerId')?.value || '',
+    shopId: document.getElementById('shopeeShopId')?.value || '',
+    accessToken: document.getElementById('shopeeAccessToken')?.value || '',
+    refreshToken: document.getElementById('shopeeRefreshToken')?.value || ''
+  };
 }
 
 function getSavedIntegration() {
-    try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    } catch {
-        return {};
-    }
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
 }
 
 function setStatus(type, message) {
-    const el = document.getElementById('integrationStatus');
+  const el = document.getElementById('integrationStatus');
 
-    if (!el) return;
+  if (!el) return;
 
-    el.className = `bot-status bot-status-${type}`;
-    el.textContent = message;
+  el.className = `bot-status bot-status-${type}`;
+  el.textContent = message;
 }
 
 function fakeRequest() {
-    return new Promise(resolve => {
-        setTimeout(resolve, 1000);
-    });
+  return new Promise(resolve => {
+    setTimeout(resolve, 1000);
+  });
 }
