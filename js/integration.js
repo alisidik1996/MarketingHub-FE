@@ -32,6 +32,13 @@ export function renderIntegrationPage() {
           <textarea id="shopeeAccessToken" hidden>${saved.accessToken || ''}</textarea>
           <textarea id="shopeeRefreshToken" hidden>${saved.refreshToken || ''}</textarea>
 
+          <div class="bot-connection-status ${saved.accessToken ? 'connected' : 'disconnected'}">
+            <span class="bot-status-dot"></span>
+            <span class="bot-status-label">
+              ${saved.accessToken ? 'Connected' : 'Disconnected'}
+            </span>
+          </div>
+
           <div class="bot-info-box">
             Klik tombol <strong>Integrasi Shopee</strong> untuk login dan menghubungkan akun Shopee secara otomatis.
           </div>
