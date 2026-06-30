@@ -122,6 +122,22 @@ function showPage(page) {
       if (!resultEl) return;
 
       try {
+        await fetch(
+          'https://marketing-hub-be.vercel.app/api/shopee/integration/save',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              partnerId: shopeeAuth.partnerId || '',
+              shopId: shopeeAuth.shopId || '',
+              accessToken: shopeeAuth.accessToken || '',
+              refreshToken: shopeeAuth.refreshToken || '',
+            }),
+          }
+        );
+
         const res = await fetch(
           'https://marketing-hub-be.vercel.app/api/shopee/ads/balance'
         );
