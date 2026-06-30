@@ -1,15 +1,16 @@
 /**
  * Entry point — boots the application.
  */
-import { TokenManager }              from './tokenManager.js';
+import { TokenManager } from './tokenManager.js';
 import { loadDashboard, initEvents } from './controller.js';
 import { setToken, fetchFallbackToken } from './api.js';
-import { LS_TOKEN }                  from './config.js';
+import { LS_TOKEN } from './config.js';
 import { renderAgentsPage, initAgentEvents } from './agents.js';
 import { renderShopeePage, initShopeeEvents } from './shopee.js';
 import { renderDateRangePicker, initDateRangePicker } from './dateRangePicker.js';
 import { state as metaState } from './state.js';
 import { renderBotPage, initBotEvents } from './bot.js';
+import { renderIntegrationPage, initIntegrationEvents } from './integration.js';
 
 // ── Page navigation ───────────────────────────────────
 
@@ -20,7 +21,7 @@ function showPage(page) {
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 
-  const topbarLeft  = document.querySelector('.topbar-left h1');
+  const topbarLeft = document.querySelector('.topbar-left h1');
   const topbarRight = document.querySelector('.topbar-right');
   if (!topbarLeft || !topbarRight) return;
 
@@ -41,7 +42,7 @@ function showPage(page) {
       </div>
     `;
     initDateRangePicker('meta', (since, until, range) => {
-      metaState.dateRange    = range;
+      metaState.dateRange = range;
       metaState._customSince = since;
       metaState._customUntil = until;
       loadDashboard();
@@ -53,9 +54,9 @@ function showPage(page) {
     if (!pageEl) return;
     pageEl.innerHTML = renderAgentsPage();
     pageEl.classList.add('active');
-    topbarLeft.textContent    = 'AI Agents';
+    topbarLeft.textContent = 'AI Agents';
     topbarRight.style.display = 'none';
-    topbarRight.innerHTML     = '';
+    topbarRight.innerHTML = '';
     initAgentEvents();
 
   } else if (page === 'bot-setting') {
@@ -63,9 +64,9 @@ function showPage(page) {
     if (!pageEl) return;
     pageEl.innerHTML = renderBotPage();
     pageEl.classList.add('active');
-    topbarLeft.textContent    = 'Bot Setting';
+    topbarLeft.textContent = 'Bot Setting';
     topbarRight.style.display = 'none';
-    topbarRight.innerHTML     = '';
+    topbarRight.innerHTML = '';
     initBotEvents();
 
   } else if (page === 'shopee-live') {
@@ -73,10 +74,23 @@ function showPage(page) {
     if (!pageEl) return;
     pageEl.innerHTML = renderShopeePage();
     pageEl.classList.add('active');
-    topbarLeft.textContent    = 'Shopee Livestream';
+    topbarLeft.textContent = 'Shopee Livestream';
     topbarRight.style.display = '';
-    topbarRight.innerHTML     = renderDateRangePicker('shopee', 'last_30d', true);
+    topbarRight.innerHTML = renderDateRangePicker('shopee', 'last_30d', true);
     initShopeeEvents();
+
+  } else if (page === 'integration') {
+    const pageEl = document.getElementById('page-integration');
+    if (!pageEl) return;
+
+    pageEl.innerHTML = renderIntegrationPage();
+    pageEl.classList.add('active');
+
+    topbarLeft.textContent = 'Marketplace Integration';
+    topbarRight.style.display = 'none';
+    topbarRight.innerHTML = '';
+
+    initIntegrationEvents();
   }
 }
 
@@ -93,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Resolve token DULU sebelum render halaman
   const stored = localStorage.getItem(LS_TOKEN);
-  let token    = stored || '';
+  let token = stored || '';
 
   if (!token) {
     try {
