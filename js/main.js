@@ -149,14 +149,7 @@ function showPage(page) {
         }
 
         const balance =
-          json?.balance ||
-          json?.data?.balance ||
-          json?.data?.data?.balance ||
-          json?.total_balance ||
-          json?.data?.total_balance ||
-          json?.data?.response?.total_balance ||
-          json?.response?.total_balance ||
-          0;
+          json?.data?.response?.total_balance || 0;
 
         if (balanceEl) {
           balanceEl.innerHTML =
